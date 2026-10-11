@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Inner Edge Dashboard</title>
+  <link rel="icon" href="assets/favicon-32.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&family=Saira+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/app.css?v=27">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <img src="assets/logo-mark.png" alt="" width="42" height="26">
+      <span>Inner Edge <b>Dashboard</b></span>
+    </div>
+    <div class="top-right">
+      <span id="demo-flag" class="pill warn" hidden>Demo Data</span>
+      <button id="setpw-open" class="ghost" hidden>Set Password</button>
+      <button id="signout" class="ghost" hidden>Sign Out</button>
+    </div>
+  </header>
+
+  <!-- Login -->
+  <main id="login" class="wrap narrow" hidden>
+    <h1>Sign In</h1>
+    <p class="muted">Access is limited to the Inner Edge team.</p>
+    <form id="login-form">
+      <label for="email">Email</label>
+      <input id="email" type="email" autocomplete="email" required>
+      <label for="password">Password</label>
+      <input id="password" type="password" autocomplete="current-password" required>
+      <button type="submit">Sign In</button>
+    </form>
+    <p class="hint">Forgot your password? Ask Miguel to reset it.</p>
+    <p id="login-msg" class="muted" role="status"></p>
+  </main>
+
+  <!-- Set password (signed in) -->
+  <main id="setpw" class="wrap narrow" hidden>
+    <h1>Set Your Password</h1>
+    <p class="muted">Choose a password only you know. You'll use it with your email to sign in.</p>
+    <form id="setpw-form">
+      <label for="newpw">New Password</label>
+      <input id="newpw" type="password" autocomplete="new-password" minlength="10" required>
+      <label for="newpw2">Confirm Password</label>
+      <input id="newpw2" type="password" autocomplete="new-password" minlength="10" required>
+      <button type="submit">Save Password</button>
+    </form>
+    <button id="setpw-cancel" type="button" class="link">Back to Dashboard</button>
+    <p id="setpw-msg" class="muted" role="status"></p>
+  </main>
+
+  <!-- No access (signed in, but not on the allowlist) -->
+  <main id="denied" class="wrap narrow" hidden>
+    <h1>No Access</h1>
+    <p class="muted">You're signed in as <b id="denied-email"></b>, but that email isn't on the dashboard access list. Ask Miguel to add you.</p>
+  </main>
+
+  <!-- Dashboard -->
+  <main id="dash" class="wrap" hidden>
+    <section class="hero card">
+      <div class="mrr-block">
+        <div class="label">Monthly Recurring Revenue</div>
+        <div id="mrr" class="big num">–</div>
+        <div id="mrr-delta" class="muted num"></div>
+      </div>
+      <div class="chart-wrap">
+        <svg id="trend" viewBox="0 0 600 160" preserveAspectRatio="none" aria-label="MRR trend"></svg>
+        <div id="trend-caption" class="muted small"></div>
+      </div>
+    </section>
+
+    <h2>Members</h2>
+    <section class="grid cols-3">
+      <details class="card list stat" id="list-paid">
+        <summary><span class="label">Paid Members</span><span id="paid" class="num val" data-count>–</span><span id="paid-warn" class="warn-note" hidden></span></summary>
+        <ul></ul>
+      </details>
+      <details class="card list" id="list-comps">
+        <summary><span class="label">Comps</span><span class="num val" data-count>–</span><span id="comps-warn" class="warn-note" hidden></span></summary>
+        <p class="hint">Free access, tagged ies-comp in GoHighLevel.</p>
+        <ul></ul>
+      </details>
+      <details class="card list" id="list-staff">
+        <summary><span class="label">Staff</span><span class="num val" data-count>–</span><span id="staff-warn" class="warn-note" hidden></span></summary>
+        <p class="hint">The team, tagged ies-team in GoHighLevel.</p>
+        <ul></ul>
+      </details>
+    </section>
+
+    <h2>Activity</h2>
+    <section class="grid cols-4 stats">
+      <details class="card list stat" id="list-new">
+        <summary><span class="label">New This Month</span><span id="new" class="num val up" data-count>–</span></summary>
+        <ul></ul>
+      </details>
+      <details class="card list stat" id="list-churned">
+        <summary><span class="label">Churned This Month</span><span id="churned" class="num val down" data-count>–</span></summary>
+        <ul></ul>
+      </details>
+      <details class="card list stat" id="list-pastdue">
+        <summary><span class="label">Past Due</span><span id="pastdue" class="num val" data-count>–</span><span class="hint">Payment failed, still counted in MRR</span></summary>
+        <ul></ul>
+      </details>
+      <details class="card list stat" id="list-cancelled">
+        <summary><span class="label">Cancelled</span><span id="cancelled" class="num val" data-count>–</span><span class="hint">Everyone who has left, newest first</span></summary>
+        <ul></ul>
+      </details>
+    </section>
+
+    <h2>Follow Up</h2>
+    <section class="grid cols-4">
+      <details class="card list" id="list-discord">
+        <summary><span class="label">In Discord, Not Paying</span><span class="num val" data-count>–</span><span id="discord-warn" class="warn-note" hidden></span></summary>
+        <p class="hint">People who still have the Member role in Discord but no active subscription. <b>Unmatched</b> means no GoHighLevel contact has their Discord username yet.</p>
+        <ul></ul>
+      </details>
+      <details class="card list" id="list-freeportal">
+        <summary><span class="label">Portal Access, Not Paying</span><span class="num val" data-count>–</span></summary>
+        <p class="hint">Can get into the member portal but aren't paying, a comp or staff. Remove their access or tag them ies-comp.</p>
+        <ul></ul>
+      </details>
+      <details class="card list" id="list-never">
+        <summary><span class="label">Abandoned Checkout</span><span class="num val" data-count>–</span></summary>
+        <p class="hint">Entered their email on the checkout page but never paid. Excludes imports, test accounts and internal accounts.</p>
+        <ul></ul>
+      </details>
+      <details class="card list" id="list-skool">
+        <summary><span class="label">Old Skool Members, Never Joined</span><span class="num val" data-count>–</span></summary>
+        <p class="hint">Imported from the old Skool community (tag skool-migrant) and never started a membership.</p>
+        <ul></ul>
+      </details>
+    </section>
+
+    <footer class="sync muted small" id="sync"></footer>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js?v=27"></script>
+  <script src="js/demo.js?v=27"></script>
+  <script src="js/render.js?v=27"></script>
+  <script src="js/app.js?v=27"></script>
+</body>
+</html>
