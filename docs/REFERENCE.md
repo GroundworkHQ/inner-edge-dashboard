@@ -97,7 +97,7 @@ Discord ──hourly cron──────▶ ies-discord-sync ────┘
 
 ## 8. Counting rules (as of 2026-10-11)
 - **Abandoned Checkout** (renamed from "Signed Up, Never Paid" 2026-10-11) = GHL `source = 'membership'` (real member-site signups) with no real subscription, not staff/comp/Skool, not `@mailinator.com`, not `ignore` in `ies_role_overrides`. Imports, email/calendar-synced and hand-added contacts never count.
-- **Old Skool, Never Joined** = tag `skool-migrant`, never subscribed.
+- **Skool, Never Joined** = tag `skool-migrant`, never subscribed.
 - **Comps** = tag `ies-comp`; **Staff** = tag `ies-team`. Dashboard-only corrections: `ies_role_overrides` (`staff` / `comp` / `none` / `ignore`).
 - **Cancelled** = ended subscriptions, minus anyone paying again, minus deleted Stripe customers, collapsed per person (first initial + surname).
 - **In Discord, Not Paying** = holds the Discord **Member** role, not paying, not comp/staff.

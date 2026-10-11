@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&family=Saira+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=27">
+  <link rel="stylesheet" href="css/app.css?v=31">
 </head>
 <body>
   <header class="top">
@@ -103,11 +103,13 @@
         <ul></ul>
       </details>
       <details class="card list stat" id="list-pastdue">
-        <summary><span class="label">Past Due</span><span id="pastdue" class="num val" data-count>–</span><span class="hint">Payment failed, still counted in MRR</span></summary>
+        <summary><span class="label">Past Due</span><span id="pastdue" class="num val" data-count>–</span></summary>
+        <p class="hint">Payment failed, still counted in MRR</p>
         <ul></ul>
       </details>
       <details class="card list stat" id="list-cancelled">
-        <summary><span class="label">Cancelled</span><span id="cancelled" class="num val" data-count>–</span><span class="hint">Everyone who has left, newest first</span></summary>
+        <summary><span class="label">Cancelled</span><span id="cancelled" class="num val" data-count>–</span></summary>
+        <p class="hint">Everyone who has left, newest first</p>
         <ul></ul>
       </details>
     </section>
@@ -130,7 +132,7 @@
         <ul></ul>
       </details>
       <details class="card list" id="list-skool">
-        <summary><span class="label">Old Skool Members, Never Joined</span><span class="num val" data-count>–</span></summary>
+        <summary><span class="label">Skool, Never Joined</span><span class="num val" data-count>–</span></summary>
         <p class="hint">Imported from the old Skool community (tag skool-migrant) and never started a membership.</p>
         <ul></ul>
       </details>
@@ -140,9 +142,9 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/config.js?v=27"></script>
-  <script src="js/demo.js?v=27"></script>
-  <script src="js/render.js?v=27"></script>
-  <script src="js/app.js?v=27"></script>
+  <script src="js/config.js?v=31"></script>
+  <script src="js/demo.js?v=31"></script>
+  <script src="js/render.js?v=31"></script>
+  <script src="js/app.js?v=31"></script>
 </body>
 </html>
