@@ -162,3 +162,9 @@ details.card summary .label { padding-right: 26px; }
 #tip-pop { position: fixed; z-index: 50; max-width: 280px; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line-2);
   background: var(--panel-2, #111827); color: var(--text); font: 13px/1.45 var(--f-body); box-shadow: 0 8px 24px rgba(0, 0, 0, .45); }
 
+/* Sign-in page logo: no frame. The edges fade into the page so the artwork's
+   dark background disappears and only the emblem and glow remain. */
+.login-logo { display: block; width: 100%; height: auto; margin: 0 0 6px;
+  -webkit-mask-image: radial-gradient(ellipse 62% 60% at 50% 50%, #000 55%, transparent 100%);
+          mask-image: radial-gradient(ellipse 62% 60% at 50% 50%, #000 55%, transparent 100%); }
+
