@@ -240,6 +240,9 @@
     fillList('list-new', ml.new, (p) => item(who(p), `Joined ${day(p.started_at)}`));
     fillList('list-churned', ml.churned, (p) => item(who(p), `Left ${day(p.ended_at)}`));
     fillList('list-pastdue', ml.pastdue, (p) => item(who(p), p.email || ''));
+    // Past due has a deadline (Stripe cancels after about a week), so it gets the
+    // orange warning treatment while anyone is on it.
+    $('list-pastdue').classList.toggle('alert', ml.pastdue.length > 0);
     fillList('list-cancelled', ml.cancelled, (p) =>
       item(who(p), p.ending ? `Ends ${day(p.when)}` : `Left ${day(p.when)}`, p.ending ? { cls: 'unmatched', text: 'Ending' } : null));
 
