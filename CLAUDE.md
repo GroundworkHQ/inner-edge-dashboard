@@ -17,7 +17,7 @@ A live members and MRR dashboard for **Inner Edge Scalping** (Forex scalping com
 - Secrets live in Edge Function env only. The page ships the public anon key and nothing else. Repo is PUBLIC.
 - Every table: `ies_` prefix, a scoping column, RLS enabled. Run the rls-auditor agent after any schema change.
 - Access is an allowlist of three emails, enforced in RLS, not just in the page.
-- Stripe, GoHighLevel and Discord are all READ-ONLY sources. Never write back to them.
+- Stripe, GoHighLevel and Discord are all READ-ONLY sources. Never write back to them. One exception: past-due alerts post to a private staff channel through a Discord webhook (`IES_DISCORD_ALERT_WEBHOOK`); that's a post, not a write to member data.
 - Never commit member data (emails, names, handles) to this repo.
 - Commit + push only when Miguel says so. Commit messages end with the Co-Authored-By line.
 

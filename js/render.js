@@ -86,6 +86,47 @@
     return li;
   }
 
+  // 30D / 90D / All buttons. The chart and the green change line both follow
+  // the chosen range; the pick is remembered per browser.
+  const RANGE_KEY = 'ies-mrr-range';
+  let range = '30';
+  try { range = localStorage.getItem(RANGE_KEY) || '30'; } catch (e) { /* storage blocked */ }
+  let lastTrend = null;
+  const ALL_FROM = '2026-02-28'; // Inner Edge launch
+
+  function drawRange() {
+    if (!lastTrend) return;
+    const { t, m } = lastTrend;
+    for (const b of document.querySelectorAll('#mrr-range button')) b.classList.toggle('on', b.dataset.range === range);
+    const from = range === 'all' ? ALL_FROM : new Date(Date.now() - Number(range) * 86400000).toISOString().slice(0, 10);
+    const pts = t.filter((p) => p.day >= from);
+    // All starts at launch; days before the first Stripe subscription are $0.
+    // One point per day, since the chart spaces points evenly.
+    if (range === 'all') {
+      const pad = [];
+      for (let d = new Date(from); pts.length && d.toISOString().slice(0, 10) < pts[0].day; d = new Date(d.getTime() + 86400000)) {
+        pad.push({ day: d.toISOString().slice(0, 10), mrr_cents: 0 });
+      }
+      pts.unshift(...pad);
+    }
+    if (pts.length > 1) {
+      const diff = m.mrr_cents - pts[0].mrr_cents;
+      $('mrr-delta').textContent = `${diff >= 0 ? '+' : '−'}${money(Math.abs(diff), m.currency)} since ${pts[0].day}`;
+      $('mrr-delta').style.color = diff >= 0 ? 'var(--up)' : 'var(--down)';
+    } else {
+      $('mrr-delta').textContent = '';
+    }
+    drawTrend(pts, m.currency);
+  }
+
+  document.getElementById('mrr-range').addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-range]');
+    if (!b) return;
+    range = b.dataset.range;
+    try { localStorage.setItem(RANGE_KEY, range); } catch (err) { /* storage blocked */ }
+    drawRange();
+  });
+
   window.renderDashboard = function (d) {
     const m = d.metrics;
     $('mrr').textContent = money(m.mrr_cents, m.currency);
@@ -106,17 +147,8 @@
       $('mrr-day').textContent = '';
     }
 
-    // Change vs the snapshot closest to 30 days ago.
-    if (t.length > 1) {
-      const target = Date.now() - 30 * 86400000;
-      const past = t.reduce((a, b) => Math.abs(new Date(b.day) - target) < Math.abs(new Date(a.day) - target) ? b : a);
-      const diff = m.mrr_cents - past.mrr_cents;
-      $('mrr-delta').textContent = `${diff >= 0 ? '+' : '−'}${money(Math.abs(diff), m.currency)} since ${past.day}`;
-      $('mrr-delta').style.color = diff >= 0 ? 'var(--up)' : 'var(--down)';
-    } else {
-      $('mrr-delta').textContent = '';
-    }
-    drawTrend(t, m.currency);
+    lastTrend = { t, m };
+    drawRange();
 
     const who = (p) => p.name || p.email || 'Unnamed';
     const day = (iso) => (iso ? iso.slice(0, 10) : '');

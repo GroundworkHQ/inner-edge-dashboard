@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&family=Saira+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=35">
+  <link rel="stylesheet" href="css/app.css?v=37">
 </head>
 <body>
   <header class="top">
@@ -71,6 +71,11 @@
         <div id="mrr-delta" class="muted num"></div>
       </div>
       <div class="chart-wrap">
+        <div class="range" id="mrr-range" role="group" aria-label="Chart range">
+          <button type="button" data-range="30">30D</button>
+          <button type="button" data-range="90">90D</button>
+          <button type="button" data-range="all">All</button>
+        </div>
         <svg id="trend" viewBox="0 0 600 160" preserveAspectRatio="none" aria-label="MRR trend"></svg>
         <div id="trend-caption" class="muted small"></div>
       </div>
@@ -144,9 +149,9 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/config.js?v=35"></script>
-  <script src="js/demo.js?v=35"></script>
-  <script src="js/render.js?v=35"></script>
-  <script src="js/app.js?v=35"></script>
+  <script src="js/config.js?v=37"></script>
+  <script src="js/demo.js?v=37"></script>
+  <script src="js/render.js?v=37"></script>
+  <script src="js/app.js?v=37"></script>
 </body>
 </html>

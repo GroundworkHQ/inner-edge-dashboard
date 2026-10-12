@@ -5,6 +5,7 @@
 import { admin, cronAuthorised, json, logRun, upsertChunked } from "../_shared/ies.ts";
 import { customerRow, subRow, type StripeCustomer, type StripeSub } from "../_shared/stripe_map.ts";
 import { accountArgs, stripe } from "../_shared/stripe_client.ts";
+import { runPastDueAlerts } from "../_shared/member_alerts.ts";
 
 Deno.serve(async (req) => {
   if (!cronAuthorised(req)) return json({ error: "unauthorised" }, 401);
@@ -22,7 +23,12 @@ Deno.serve(async (req) => {
     await upsertChunked(db, "ies_stripe_customers", customers, "customer_id");
     await upsertChunked(db, "ies_stripe_subscriptions", subs, "subscription_id");
 
-    const detail = `${customers.length} customers, ${subs.length} subscriptions`;
+    // Discord past-due alerts ride on this sync. A Discord failure is noted in
+    // the run detail but never fails the Stripe sync itself.
+    let alerts: string;
+    try { alerts = await runPastDueAlerts(db); } catch (e) { alerts = `alerts failed: ${(e as Error).message}`; }
+
+    const detail = `${customers.length} customers, ${subs.length} subscriptions; ${alerts}`;
     await logRun(db, "stripe-backfill", true, detail);
     return json({ ok: true, detail });
   } catch (e) {
