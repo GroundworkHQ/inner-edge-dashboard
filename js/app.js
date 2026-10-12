@@ -53,6 +53,15 @@
     show('dash');
   });
 
+  // Account menu: Set Password, Sign Out (Refresh stays its own button). Closes on pick, outside
+  // click or Escape.
+  const menuBtn = $('menu-btn'), menuList = $('menu-list');
+  const setMenu = (open) => { menuList.hidden = !open; menuBtn.setAttribute('aria-expanded', String(open)); };
+  menuBtn.addEventListener('click', (e) => { e.stopPropagation(); setMenu(menuList.hidden); });
+  menuList.addEventListener('click', () => setMenu(false));
+  document.addEventListener('click', (e) => { if (!e.target.closest('#acct')) setMenu(false); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setMenu(false); });
+
   $('signout').addEventListener('click', async () => {
     await sb.auth.signOut();
     location.reload();
@@ -80,8 +89,8 @@
   });
 
   async function load(session) {
-    if (!session) { ['signout', 'setpw-open', 'refresh'].forEach((id) => ($(id).hidden = true)); show('login'); return; }
-    ['signout', 'setpw-open', 'refresh'].forEach((id) => ($(id).hidden = false));
+    if (!session) { ['acct', 'signout', 'setpw-open', 'refresh'].forEach((id) => ($(id).hidden = true)); show('login'); return; }
+    ['acct', 'signout', 'setpw-open', 'refresh'].forEach((id) => ($(id).hidden = false));
 
     const { data: viewer } = await sb.from('ies_viewers').select('email').maybeSingle();
     if (!viewer) { $('refresh').hidden = true; $('denied-email').textContent = session.user.email; show('denied'); return; }

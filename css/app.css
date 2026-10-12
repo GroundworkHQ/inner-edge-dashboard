@@ -42,6 +42,14 @@ body {
 .brand { display: flex; align-items: center; gap: 10px; font: 700 20px/1 var(--f-display); letter-spacing: .04em; text-transform: uppercase; color: var(--chrome); }
 .brand b { color: var(--electric); font-weight: 800; }
 .top-right { display: flex; align-items: center; gap: 10px; }
+.menu { position: relative; }
+.menu-list { position: absolute; right: 0; top: calc(100% + 6px); z-index: 40; min-width: 170px; padding: 6px;
+  display: flex; flex-direction: column; border: 1px solid var(--line-2); border-radius: 10px; background: var(--panel-2);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .45); }
+.menu-list[hidden] { display: none; }
+.menu-list button { background: transparent; color: var(--text); text-align: left; padding: 9px 10px; border-radius: 6px; font-size: 13px; }
+.menu-list button:hover { background: rgba(255, 255, 255, .05); }
+.menu-list #signout { color: var(--down); border-top: 1px solid var(--line); border-radius: 0 0 6px 6px; margin-top: 4px; }
 
 .wrap { max-width: 1280px; margin: 0 auto; padding: 28px var(--gutter) 60px; }
 .narrow { max-width: 440px; }

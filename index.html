@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&family=Saira+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=59">
+  <link rel="stylesheet" href="css/app.css?v=61">
 </head>
 <body>
   <header class="top">
@@ -20,8 +20,13 @@
     <div class="top-right">
       <span id="demo-flag" class="pill warn" hidden>Demo Data</span>
       <button id="refresh" class="ghost" hidden>Refresh</button>
-      <button id="setpw-open" class="ghost" hidden>Set Password</button>
-      <button id="signout" class="ghost" hidden>Sign Out</button>
+      <div class="menu" id="acct" hidden>
+        <button id="menu-btn" class="ghost" aria-haspopup="true" aria-expanded="false">Account ▾</button>
+        <div class="menu-list" id="menu-list" role="menu" hidden>
+          <button id="setpw-open" role="menuitem" hidden>Set Password</button>
+          <button id="signout" role="menuitem" hidden>Sign Out</button>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -159,9 +164,9 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/config.js?v=59"></script>
-  <script src="js/demo.js?v=59"></script>
-  <script src="js/render.js?v=59"></script>
-  <script src="js/app.js?v=59"></script>
+  <script src="js/config.js?v=61"></script>
+  <script src="js/demo.js?v=61"></script>
+  <script src="js/render.js?v=61"></script>
+  <script src="js/app.js?v=61"></script>
 </body>
 </html>
