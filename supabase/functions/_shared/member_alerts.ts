@@ -55,7 +55,7 @@ export async function runPastDueAlerts(db: SupabaseClient): Promise<string> {
       .select("id").single();
     if (error) continue;
     try {
-      await post(hook, await pastDueMessage(db, sub));
+      await post(hook, await pastDueMessage(db, sub), pingIds("IES_DISCORD_ALERT_PING"));
     } catch (e) {
       // Not sent: release the claim so the next sync tries again.
       await db.from("ies_member_alerts").delete().eq("id", claim.id);
@@ -72,20 +72,31 @@ export async function runPastDueAlerts(db: SupabaseClient): Promise<string> {
     const name = await customerName(db, alert.customer_id);
     await post(hook, paid
       ? `✅ **${name}** paid. Their membership is back to normal, no need to reach out.`
-      : `❌ **${name}**'s subscription was cancelled after the failed payment (Stripe status: ${sub.status}). Check their portal access and Discord role are removed.`);
+      : `❌ **${name}**'s subscription was cancelled after the failed payment (Stripe status: ${sub.status}). Check their course access and Discord role are removed.`,
+      pingIds(paid ? "IES_DISCORD_ALERT_PING" : "IES_DISCORD_ACCESS_PING"));
     await db.from("ies_member_alerts").update({ resolved_at: new Date().toISOString(), resolution: paid ? "paid" : "cancelled" }).eq("id", alert.id);
     settled++;
   }
   return `alerts: ${posted} new, ${settled} settled`;
 }
 
-async function post(hook: string, content: string) {
+// Discord user IDs to tag, comma-separated in Edge secrets so the people can
+// change without a deploy (and stay out of this public repo):
+//   IES_DISCORD_ALERT_PING   follows up on missed payments (failed + paid posts)
+//   IES_DISCORD_ACCESS_PING  removes course access and Discord role (cancelled posts)
+function pingIds(name: "IES_DISCORD_ALERT_PING" | "IES_DISCORD_ACCESS_PING"): string[] {
+  return (Deno.env.get(name) ?? "").split(",").map((x) => x.trim()).filter((x) => /^\d{15,25}$/.test(x));
+}
+
+async function post(hook: string, content: string, ping: string[]) {
+  const text = ping.length ? `${ping.map((id) => `<@${id}>`).join(" ")} ${content}` : content;
   const res = await fetch(hook, {
     method: "POST",
     headers: { "content-type": "application/json" },
-    // No pings: member names come from Stripe/GHL and must never mention @everyone.
+    // Only the listed people are pinged. Member mentions in the body stay
+    // silent, and @everyone/@here can never fire from names in Stripe or GHL.
     // The webhook's own name in Discord is ignored; every post shows as Member Alerts.
-    body: JSON.stringify({ username: "Member Alerts", content: content.slice(0, 2000), allowed_mentions: { parse: [] } }),
+    body: JSON.stringify({ username: "Member Alerts", content: text.slice(0, 2000), allowed_mentions: { parse: [], users: ping } }),
   });
   if (!res.ok) throw new Error(`discord webhook ${res.status}`);
 }
@@ -178,17 +189,42 @@ async function pastDueMessage(db: SupabaseClient, sub: Sub): Promise<string> {
   const tips: string[] = [];
   if (isNew) tips.push("New member hitting their first renewal. Often just a card limit or a bank blocking a new merchant.");
   if (cancellations > 0) tips.push(`Has left and come back${rejoins > 1 ? " more than once" : ""}. Worth asking what brought them back and what would make them stay.`);
-  if (!isNew && cancellations === 0) tips.push("Long-standing member who has never left. Most likely an expired or replaced card, keep it light.");
+  if (!isNew && cancellations === 0) tips.push("Long-standing member who has never left. Most likely an expired card or a new card from the bank, keep it light.");
   if (roles.some((r) => /coaching/i.test(r))) tips.push("In Coaching Corner, so they're engaged. Mention the coaching sessions.");
 
+  // Sample DM built from what we know, in a friendly voice. Rule: never mention
+  // past cancellations or payment trouble beyond this one; that history is for
+  // the mod (above), and quoting it back reads like we keep tabs on people.
+  const sinceMonth = first ? new Date(first).toLocaleDateString("en-GB", { month: "long", year: "numeric", timeZone: "Europe/London" }) : null;
+  const months = first ? (Date.now() - new Date(first).getTime()) / (30.4 * DAY) : 0;
+  const coaching = roles.some((r) => /coaching/i.test(r));
+  const skool = tags.includes("skool-migrant");
+  const daysLeft = cancelsOn ? Math.round((new Date(cancelsOn).getTime() - Date.now()) / DAY) : null;
+
+  const opener = isNew
+    ? `Hey ${firstName}, hope you're settling in well with Inner Edge.`
+    : skool
+      ? `Hey ${firstName}, you've been with us since the Skool days, which we really appreciate.`
+      : months >= 6 && sinceMonth
+        ? `Hey ${firstName}, you've been part of Inner Edge since ${sinceMonth}, which means a lot.`
+        : `Hey ${firstName}, hope the trading's going well.`;
+  const problem = "Quick heads up: your last membership payment didn't go through, usually just an expired card or a new card from the bank.";
   // Masked link: pasted into a DM, the member sees only "Update your card here"
   // and the long Stripe URL stays hidden.
   const fix = payUrl
     ? `It only takes a minute: [Update your card here](${payUrl})`
     : "Reply here and we'll send you the link to update it.";
-  // One message for everyone. History stays in the alert for the mod; reminding a
-  // member they left before reads like we're keeping tabs on them.
-  const dm = `Hey ${firstName}, hope the trading's going well. Quick heads up: your last Inner Edge payment didn't go through, usually just an expired or replaced card. ${fix}\n\nAnd if something's not working for you, I'd genuinely like to hear it.`;
+  const urgency = retriesDone
+    ? "Your access is about to end, so worth sorting today if you want to keep it."
+    : daysLeft !== null && daysLeft <= 3 && cancelsOn
+      ? `Your access ends around ${fmt(cancelsOn).replace(/ \d{4}$/, "")} if it isn't updated, so just a heads up on timing.`
+      : null;
+  const extra = coaching ? "Would hate for you to miss the next Coaching Corner session." : null;
+  const closer = isNew
+    ? "And if you need a hand with anything while you're getting started, just ask."
+    : "And if something's not working for you, I'd genuinely like to hear it.";
+  const dm = [[opener, problem, fix].join(" "), [urgency, extra].filter(Boolean).join(" "), closer]
+    .filter(Boolean).join("\n\n");
 
   return [
     `⚠️ **Payment Failed: ${name}**`,

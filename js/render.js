@@ -7,10 +7,26 @@
 (function () {
   const $ = (id) => document.getElementById(id);
 
+  // $ / £ toggle. Stripe bills in USD; pounds are converted at today's rate
+  // (ECB reference rate via frankfurter.dev, cached per day per browser). The
+  // pick is remembered per browser; if the rate can't load, it stays in dollars.
+  const CUR_KEY = 'ies-currency', RATE_KEY = 'ies-usd-gbp';
+  let showCur = 'usd';
+  let gbpRate = null;
+  try {
+    showCur = localStorage.getItem(CUR_KEY) || 'usd';
+    const cached = JSON.parse(localStorage.getItem(RATE_KEY) || 'null');
+    if (cached && cached.day === new Date().toISOString().slice(0, 10)) gbpRate = cached.rate;
+  } catch (e) { /* storage blocked */ }
+  const inGbp = () => showCur === 'gbp' && gbpRate;
+
   function money(cents, currency) {
+    let cur = (currency || 'usd').toLowerCase();
+    let amount = (cents || 0) / 100;
+    if (inGbp() && cur === 'usd') { amount *= gbpRate; cur = 'gbp'; }
     return new Intl.NumberFormat('en-GB', {
-      style: 'currency', currency: (currency || 'usd').toUpperCase(), currencyDisplay: 'narrowSymbol', maximumFractionDigits: 0,
-    }).format((cents || 0) / 100);
+      style: 'currency', currency: cur.toUpperCase(), currencyDisplay: 'narrowSymbol', maximumFractionDigits: 0,
+    }).format(amount);
   }
 
   function el(tag, cls, text) {
@@ -66,7 +82,8 @@
     svg.append(area, poly);
 
     const first = points[0].day, last = points[points.length - 1].day;
-    $('trend-caption').textContent = `${first} to ${last} · low ${money(min, currency)} · high ${money(max, currency)}`;
+    $('trend-caption').textContent = `${first} to ${last} · low ${money(min, currency)} · high ${money(max, currency)}`
+      + (inGbp() ? ` · in £ at today's rate ($1 = £${gbpRate.toFixed(2)})` : '');
   }
 
   function fillList(id, rows, toItem) {
@@ -127,7 +144,39 @@
     drawRange();
   });
 
+  let lastData = null;
+  const paintCur = () => {
+    for (const b of document.querySelectorAll('#cur-toggle button')) b.classList.toggle('on', b.dataset.cur === (inGbp() ? 'gbp' : 'usd'));
+  };
+  async function loadRate() {
+    if (gbpRate) return true;
+    try {
+      const r = await fetch('https://api.frankfurter.dev/v1/latest?base=USD&symbols=GBP');
+      const j = await r.json();
+      if (!j?.rates?.GBP) return false;
+      gbpRate = j.rates.GBP;
+      try { localStorage.setItem(RATE_KEY, JSON.stringify({ day: new Date().toISOString().slice(0, 10), rate: gbpRate })); } catch (e) { /* storage blocked */ }
+      return true;
+    } catch (e) { return false; }
+  }
+  document.getElementById('cur-toggle').addEventListener('click', async (e) => {
+    const b = e.target.closest('button[data-cur]');
+    if (!b) return;
+    if (b.dataset.cur === 'gbp' && !(await loadRate())) {
+      b.title = "Couldn't load today's exchange rate. Try again in a moment.";
+      return;
+    }
+    showCur = b.dataset.cur;
+    try { localStorage.setItem(CUR_KEY, showCur); } catch (err) { /* storage blocked */ }
+    if (lastData) window.renderDashboard(lastData);
+    paintCur();
+  });
+  // A saved £ choice needs today's rate before the first paint looks right.
+  if (showCur === 'gbp' && !gbpRate) loadRate().then((ok) => { if (ok && lastData) window.renderDashboard(lastData); paintCur(); });
+  paintCur();
+
   window.renderDashboard = function (d) {
+    lastData = d;
     const m = d.metrics;
     $('mrr').textContent = money(m.mrr_cents, m.currency);
 
@@ -156,7 +205,7 @@
     // Access gaps per person (Discord: ies_v_access_gaps, member portal:
     // ies_v_portal_gaps), keyed by lower-cased email. Gaps marked expected in
     // ies_gap_exceptions never reach the page.
-    const gapLabel = { not_in_discord: 'Not in Discord', no_member_role: 'No Discord Role', no_portal_access: 'No Portal Access' };
+    const gapLabel = { not_in_discord: 'Not in Discord', no_member_role: 'No Discord Role', no_portal_access: 'No Course Access' };
     const gapsFor = new Map();
     for (const g of [...(d.accessGaps || []), ...(d.portalGaps || []).filter((x) => x.issue === 'no_portal_access')]) {
       const k = (g.email || g.name || '').toLowerCase();
@@ -189,7 +238,7 @@
       const notes = gs.map((g) => `${nameOf(g)} ${{
         not_in_discord: 'is not in the Discord server',
         no_member_role: 'has no Member role in Discord',
-        no_portal_access: 'has no member portal access',
+        no_portal_access: 'has no course access',
       }[g.issue]}.`);
       const people = new Set(gs.map((g) => (g.email || g.name || '').toLowerCase())).size;
       $(cardId).classList.toggle('alert', people > 0);
@@ -202,7 +251,7 @@
     gapNote('list-comps', 'comps-warn', 'comps-detail', 'comp');
     gapNote('list-staff', 'staff-warn', 'staff-detail', 'staff');
 
-    // Portal access without a reason to have it.
+    // Course access without a reason to have it.
     const free = (d.portalGaps || []).filter((g) => g.issue === 'unpaid_portal_access');
     fillList('list-freeportal', free, (g) => item(nameOf(g), g.email || ''));
     $('list-freeportal').classList.toggle('alert', free.length > 0);
@@ -234,4 +283,39 @@
       sync.appendChild(s);
     }
   };
+
+  // Info tooltips (the "i" on each card). Hover on desktop, tap on phones. The
+  // button sits inside <summary>, so a tap must not also open the card.
+  const pop = document.createElement('div');
+  pop.id = 'tip-pop';
+  pop.hidden = true;
+  document.body.appendChild(pop);
+  let current = null;
+  const hideTip = () => { pop.hidden = true; current?.classList.remove('on'); current = null; };
+  const showTip = (btn) => {
+    if (current && current !== btn) current.classList.remove('on');
+    current = btn;
+    btn.classList.add('on');
+    pop.textContent = btn.dataset.tip;
+    pop.hidden = false;
+    const r = btn.getBoundingClientRect();
+    const w = pop.offsetWidth, h = pop.offsetHeight;
+    const left = Math.min(Math.max(8, r.right - w), window.innerWidth - w - 8);
+    const top = r.bottom + 8 + h > window.innerHeight ? r.top - h - 8 : r.bottom + 8;
+    pop.style.left = `${left}px`;
+    pop.style.top = `${top}px`;
+  };
+  const hoverable = matchMedia('(hover: hover)').matches;
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.tip');
+    if (!btn) { hideTip(); return; }
+    e.preventDefault();
+    e.stopPropagation();
+    current === btn && !hoverable ? hideTip() : showTip(btn);
+  }, true);
+  if (hoverable) {
+    document.addEventListener('mouseover', (e) => { const b = e.target.closest('.tip'); if (b) showTip(b); });
+    document.addEventListener('mouseout', (e) => { if (e.target.closest('.tip')) hideTip(); });
+  }
+  window.addEventListener('scroll', hideTip, { passive: true });
 })();

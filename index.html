@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&family=Saira+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=39">
+  <link rel="stylesheet" href="css/app.css?v=45">
 </head>
 <body>
   <header class="top">
@@ -65,16 +65,22 @@
   <main id="dash" class="wrap" hidden>
     <section class="hero card">
       <div class="mrr-block">
-        <div class="label">Monthly Recurring Revenue</div>
+        <div class="label">Monthly Recurring Revenue <button type="button" class="tip" aria-label="What is Monthly Recurring Revenue?" data-tip="What all active memberships bring in each month right now. Members whose payment failed still count until Stripe cancels them. Use 30D, 90D and All to change the chart and the green number, and $ or £ to switch currency (pounds use today&#x27;s exchange rate).">i</button></div>
         <div id="mrr" class="big num">–</div>
         <div id="mrr-day" class="muted num"></div>
         <div id="mrr-delta" class="muted num"></div>
       </div>
       <div class="chart-wrap">
-        <div class="range" id="mrr-range" role="group" aria-label="Chart range">
-          <button type="button" data-range="30">30D</button>
-          <button type="button" data-range="90">90D</button>
-          <button type="button" data-range="all">All</button>
+        <div class="chart-controls">
+          <div class="range" id="cur-toggle" role="group" aria-label="Currency">
+            <button type="button" data-cur="usd">$</button>
+            <button type="button" data-cur="gbp">£</button>
+          </div>
+          <div class="range" id="mrr-range" role="group" aria-label="Chart range">
+            <button type="button" data-range="30">30D</button>
+            <button type="button" data-range="90">90D</button>
+            <button type="button" data-range="all">All</button>
+          </div>
         </div>
         <svg id="trend" viewBox="0 0 600 160" preserveAspectRatio="none" aria-label="MRR trend"></svg>
         <div id="trend-caption" class="muted small"></div>
@@ -84,18 +90,18 @@
     <h2>Members</h2>
     <section class="grid cols-3">
       <details class="card list stat" id="list-paid">
-        <summary><span class="label">Paid Members</span><span id="paid" class="num val" data-count>–</span><span id="paid-warn" class="warn-note" hidden></span></summary>
+        <summary><span class="label">Paid Members</span><button type="button" class="tip" aria-label="What is Paid Members?" data-tip="Everyone with a paid membership right now, including anyone whose latest payment failed but hasn&#x27;t been cancelled yet. Open it to see who and when they joined.">i</button><span id="paid" class="num val" data-count>–</span><span id="paid-warn" class="warn-note" hidden></span></summary>
         <p id="paid-detail" class="warn-detail" hidden></p>
         <ul></ul>
       </details>
       <details class="card list" id="list-comps">
-        <summary><span class="label">Comps</span><span class="num val" data-count>–</span><span id="comps-warn" class="warn-note" hidden></span></summary>
+        <summary><span class="label">Comps</span><button type="button" class="tip" aria-label="What is Comps?" data-tip="People with free access, tagged ies-comp in GoHighLevel. A warning means one of them is missing their Discord role or course access.">i</button><span class="num val" data-count>–</span><span id="comps-warn" class="warn-note" hidden></span></summary>
         <p class="hint">Free access, tagged ies-comp in GoHighLevel.</p>
         <p id="comps-detail" class="warn-detail" hidden></p>
         <ul></ul>
       </details>
       <details class="card list" id="list-staff">
-        <summary><span class="label">Staff</span><span class="num val" data-count>–</span><span id="staff-warn" class="warn-note" hidden></span></summary>
+        <summary><span class="label">Staff</span><button type="button" class="tip" aria-label="What is Staff?" data-tip="The Inner Edge team, tagged ies-team in GoHighLevel. Not counted as paying members.">i</button><span class="num val" data-count>–</span><span id="staff-warn" class="warn-note" hidden></span></summary>
         <p class="hint">The team, tagged ies-team in GoHighLevel.</p>
         <p id="staff-detail" class="warn-detail" hidden></p>
         <ul></ul>
@@ -105,20 +111,20 @@
     <h2>Activity</h2>
     <section class="grid cols-4 stats">
       <details class="card list stat" id="list-new">
-        <summary><span class="label">New This Month</span><span id="new" class="num val up" data-count>–</span></summary>
+        <summary><span class="label">New This Month</span><button type="button" class="tip" aria-label="What is New This Month?" data-tip="People who started a paid membership since the 1st of this month (UK time), including anyone who came back.">i</button><span id="new" class="num val up" data-count>–</span></summary>
         <ul></ul>
       </details>
       <details class="card list stat" id="list-churned">
-        <summary><span class="label">Churned This Month</span><span id="churned" class="num val down" data-count>–</span></summary>
+        <summary><span class="label">Churned This Month</span><button type="button" class="tip" aria-label="What is Churned This Month?" data-tip="People whose membership ended since the 1st of this month (UK time).">i</button><span id="churned" class="num val down" data-count>–</span></summary>
         <ul></ul>
       </details>
       <details class="card list stat" id="list-pastdue">
-        <summary><span class="label">Past Due</span><span id="pastdue" class="num val" data-count>–</span></summary>
+        <summary><span class="label">Past Due</span><button type="button" class="tip" aria-label="What is Past Due?" data-tip="Members whose latest payment failed. Stripe retries the card for about a week, then cancels. Each one gets an alert in #moderator-chat so it can be followed up.">i</button><span id="pastdue" class="num val" data-count>–</span></summary>
         <p class="hint">Payment failed, still counted in MRR</p>
         <ul></ul>
       </details>
       <details class="card list stat" id="list-cancelled">
-        <summary><span class="label">Cancelled</span><span id="cancelled" class="num val" data-count>–</span></summary>
+        <summary><span class="label">Cancelled</span><button type="button" class="tip" aria-label="What is Cancelled?" data-tip="Everyone who has left, newest first. Ending means they cancelled but still have paid time left.">i</button><span id="cancelled" class="num val" data-count>–</span></summary>
         <p class="hint">Everyone who has left, newest first</p>
         <ul></ul>
       </details>
@@ -127,23 +133,23 @@
     <h2>Follow Up</h2>
     <section class="grid cols-4">
       <details class="card list" id="list-discord">
-        <summary><span class="label">In Discord, Not Paying</span><span class="num val" data-count>–</span><span id="discord-warn" class="warn-note" hidden></span></summary>
+        <summary><span class="label">In Discord, Not Paying</span><button type="button" class="tip" aria-label="What is In Discord, Not Paying?" data-tip="People who still have a role in Discord but no paid membership. Usually means their role needs removing.">i</button><span class="num val" data-count>–</span><span id="discord-warn" class="warn-note" hidden></span></summary>
         <p class="hint">People who still have a role in Discord (Member or any other) but no active subscription. <b>Unmatched</b> means no GoHighLevel contact has their Discord username yet.</p>
         <p id="discord-detail" class="warn-detail" hidden></p>
         <ul></ul>
       </details>
       <details class="card list" id="list-freeportal">
-        <summary><span class="label">Portal Access, Not Paying</span><span class="num val" data-count>–</span></summary>
-        <p class="hint">Can get into the member portal but aren't paying, a comp or staff. Remove their access or tag them ies-comp.</p>
+        <summary><span class="label">Course Access, Not Paying</span><button type="button" class="tip" aria-label="What is Course Access, Not Paying?" data-tip="People who can still get into the course but aren&#x27;t paying, a comp or staff. Usually means their access needs revoking in GoHighLevel.">i</button><span class="num val" data-count>–</span></summary>
+        <p class="hint">Can get into the course but aren't paying, a comp or staff. Remove their access or tag them ies-comp.</p>
         <ul></ul>
       </details>
       <details class="card list" id="list-never">
-        <summary><span class="label">Abandoned Checkout</span><span class="num val" data-count>–</span></summary>
+        <summary><span class="label">Abandoned Checkout</span><button type="button" class="tip" aria-label="What is Abandoned Checkout?" data-tip="People who started checkout and entered their email but never paid. Good people to follow up with.">i</button><span class="num val" data-count>–</span></summary>
         <p class="hint">Entered their email on the checkout page but never paid. Excludes imports, test accounts and internal accounts.</p>
         <ul></ul>
       </details>
       <details class="card list" id="list-skool">
-        <summary><span class="label">Skool, Never Joined</span><span class="num val" data-count>–</span></summary>
+        <summary><span class="label">Skool, Never Joined</span><button type="button" class="tip" aria-label="What is Skool, Never Joined?" data-tip="Members from the old Skool community who never started a membership here.">i</button><span class="num val" data-count>–</span></summary>
         <p class="hint">Imported from the old Skool community (tag skool-migrant) and never started a membership.</p>
         <ul></ul>
       </details>
@@ -153,9 +159,9 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/config.js?v=39"></script>
-  <script src="js/demo.js?v=39"></script>
-  <script src="js/render.js?v=39"></script>
-  <script src="js/app.js?v=39"></script>
+  <script src="js/config.js?v=45"></script>
+  <script src="js/demo.js?v=45"></script>
+  <script src="js/render.js?v=45"></script>
+  <script src="js/app.js?v=45"></script>
 </body>
 </html>

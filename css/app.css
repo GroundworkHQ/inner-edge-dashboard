@@ -43,7 +43,7 @@ body {
 .brand b { color: var(--electric); font-weight: 800; }
 .top-right { display: flex; align-items: center; gap: 10px; }
 
-.wrap { max-width: 1180px; margin: 0 auto; padding: 28px var(--gutter) 60px; }
+.wrap { max-width: 1280px; margin: 0 auto; padding: 28px var(--gutter) 60px; }
 .narrow { max-width: 440px; }
 h1, h2 { font-family: var(--f-display); color: var(--chrome); letter-spacing: .03em; text-transform: uppercase; }
 h1 { font-size: 34px; margin: 20px 0 8px; }
@@ -69,7 +69,8 @@ h2 { font-size: 22px; margin: 34px 0 12px; }
 .mrr-block { text-align: center; }
 #mrr { color: var(--up); }
 .chart-wrap svg { width: 100%; height: 160px; display: block; }
-.range { display: flex; justify-content: flex-end; gap: 4px; margin-bottom: 8px; }
+.chart-controls { display: flex; justify-content: flex-end; gap: 12px; margin-bottom: 8px; }
+.range { display: flex; justify-content: flex-end; gap: 4px; }
 .range button { background: transparent; color: var(--muted); border: 1px solid var(--line-2); padding: 4px 10px; font: 600 11px/1 var(--f-body); letter-spacing: .06em; border-radius: 999px; }
 .range button.on { color: var(--text); border-color: var(--electric); }
 #trend .area { fill: url(#trendFill); }
@@ -132,3 +133,15 @@ button.link { background: none; color: var(--electric); padding: 0; margin-top: 
   .val { font-size: 26px; }
   .brand span { font-size: 17px; }
 }
+
+/* Info buttons: top-right of each card, inline next to the MRR label. */
+details.card { position: relative; }
+.tip { width: 18px; height: 18px; padding: 0; border-radius: 50%; border: 1px solid var(--line-2); background: transparent;
+  color: var(--muted); font: italic 700 11px/16px Georgia, serif; text-transform: none; letter-spacing: 0; cursor: help; flex: none; }
+.tip:hover, .tip.on { color: var(--text); border-color: var(--electric); }
+details.card .tip { position: absolute; top: 12px; right: 12px; }
+details.card summary .label { padding-right: 26px; }
+.mrr-block .tip { margin-left: 4px; vertical-align: 1px; }
+#tip-pop { position: fixed; z-index: 50; max-width: 280px; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line-2);
+  background: var(--panel-2, #111827); color: var(--text); font: 13px/1.45 var(--f-body); box-shadow: 0 8px 24px rgba(0, 0, 0, .45); }
+
