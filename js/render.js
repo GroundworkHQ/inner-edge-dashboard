@@ -95,9 +95,20 @@
     for (const r of rows) ul.appendChild(toItem(r));
   }
 
+  // Names display Title Cased whatever Stripe/GHL/Discord hold ("david henry"
+  // shows as "David Henry", "gRIMES" as "Grimes"). Words that start with a capital
+  // and mix case on purpose (McCrindle, DeBry) are left alone; emails pass
+  // through untouched. Display only, data is unchanged.
+  function properName(s) {
+    if (!s || s.includes('@')) return s;
+    return s.split(' ').map((w) => (/[a-z]/i.test(w) && (w === w.toLowerCase() || w === w.toUpperCase() || /^[a-z]/.test(w))
+      ? w.toLowerCase().replace(/(^|[-'’])([a-z])/g, (_, sep, c) => sep + c.toUpperCase())
+      : w)).join(' ');
+  }
+
   function item(who, meta, tag) {
     const li = el('li');
-    const left = el('span', 'who', who);
+    const left = el('span', 'who', properName(who));
     if (tag) left.appendChild(el('span', `tag ${tag.cls}`, tag.text));
     li.append(left, el('span', 'meta', meta || ''));
     return li;
@@ -231,7 +242,7 @@
     // People who should have access but don't, per card. The card face shows a
     // count; the full notes sit at the top of the dropdown, and each name in the
     // list carries a tag.
-    const nameOf = (g) => g.name || g.email;
+    const nameOf = (g) => properName(g.name || g.email);
     const gapNote = (cardId, warnId, detailId, kind) => {
       const gs = [...(d.accessGaps || []), ...(d.portalGaps || []).filter((g) => g.issue === 'no_portal_access')]
         .filter((g) => g.kind === kind);
@@ -264,7 +275,7 @@
     warn.textContent = miss.length ? `⚠ ${miss.length} missing a Discord name` : '';
     $('discord-detail').hidden = !miss.length;
     $('discord-detail').textContent = miss.length
-      ? `${miss.length} paying member${miss.length > 1 ? 's' : ''} from the last 2 weeks ${miss.length > 1 ? 'have' : 'has'} no Discord name yet: ${miss.map((p) => p.name || p.email).join(', ')}. Either they never gave one (still Pending in the Zapier table) or the "Add Discord Name" Zap missed them.`
+      ? `${miss.length} paying member${miss.length > 1 ? 's' : ''} from the last 2 weeks ${miss.length > 1 ? 'have' : 'has'} no Discord name yet: ${miss.map((p) => properName(p.name || p.email)).join(', ')}. Either they never gave one (still Pending in the Zapier table) or the "Add Discord Name" Zap missed them.`
       : '';
 
     fillList('list-never', d.never, (p) =>

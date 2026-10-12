@@ -92,7 +92,7 @@
       sb.from('ies_mrr_daily').select('day, mrr_cents, taken_at').order('day'),
       sb.from('ies_v_people').select('name, email, discord_username, is_staff, is_comp, is_paying, ever_subscribed, date_added, is_skool_migrant, is_signup, is_ignored'),
       sb.from('ies_v_discord').select('username, display_name, contact_name, status').in('status', ['not_paying', 'unmatched']).eq('has_any_role', true).order('status'),
-      sb.from('ies_sync_runs').select('source, ok, detail, ran_at').order('ran_at', { ascending: false }).limit(60),
+      sb.from('ies_sync_runs').select('source, ok, detail, ran_at').order('ran_at', { ascending: false }).limit(300),
       sb.from('ies_v_access_gaps').select('name, email, kind, issue'),
       sb.from('ies_v_portal_gaps').select('name, email, kind, issue'),
     ]);

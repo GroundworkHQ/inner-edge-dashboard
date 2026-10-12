@@ -58,7 +58,7 @@ h2 { font-size: 22px; margin: 34px 0 12px; }
 .label { font: 600 12px/1.2 var(--f-body); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
 .num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
 .big { font-size: clamp(36px, 7vw, 56px); font-weight: 700; color: var(--chrome); line-height: 1.1; margin: 6px 0 4px; }
-.val { font-size: 30px; font-weight: 700; color: var(--chrome); margin-top: 6px; }
+.val { font-size: 42px; line-height: 1.05; font-weight: 700; color: var(--chrome); margin-top: 8px; }
 .val.up { color: var(--up); }
 .val.down { color: var(--down); }
 .muted { color: var(--muted); }
@@ -130,7 +130,7 @@ button.link { background: none; color: var(--electric); padding: 0; margin-top: 
 @media (max-width: 640px) {
   .hero { grid-template-columns: 1fr; }
   .cols-2, .cols-4 { grid-template-columns: 1fr; }
-  .val { font-size: 26px; }
+  .val { font-size: 34px; }
   .brand span { font-size: 17px; }
 }
 
