@@ -36,6 +36,14 @@
     return n;
   }
 
+  // "12 Sep", or "12 Sep 2025" outside the current year. UK time, like the business.
+  function fmtDay(iso) {
+    if (!iso) return '';
+    const d = new Date(iso.length === 10 ? `${iso}T12:00:00Z` : iso);
+    const sameYear = d.getUTCFullYear() === new Date().getUTCFullYear();
+    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', ...(sameYear ? {} : { year: 'numeric' }), timeZone: 'Europe/London' });
+  }
+
   function ago(iso) {
     if (!iso) return 'never';
     const mins = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
@@ -82,13 +90,14 @@
     svg.append(area, poly);
 
     const first = points[0].day, last = points[points.length - 1].day;
-    $('trend-caption').textContent = `${first} to ${last} · low ${money(min, currency)} · high ${money(max, currency)}`
+    $('trend-caption').textContent = `${fmtDay(first)} to ${fmtDay(last)} · low ${money(min, currency)} · high ${money(max, currency)}`
       + (inGbp() ? ` · in £ at today's rate ($1 = £${gbpRate.toFixed(2)})` : '');
   }
 
   function fillList(id, rows, toItem) {
     const box = $(id);
     box.querySelector('[data-count]').textContent = rows.length;
+    box.classList.toggle('clear', !rows.length && box.hasAttribute('data-zero-ok'));
     const ul = box.querySelector('ul');
     ul.replaceChildren();
     if (!rows.length) { ul.appendChild(el('li', 'empty', 'Nobody here')); return; }
@@ -139,7 +148,7 @@
     }
     if (pts.length > 1) {
       const diff = m.mrr_cents - pts[0].mrr_cents;
-      $('mrr-delta').textContent = `${diff >= 0 ? '+' : '−'}${money(Math.abs(diff), m.currency)} since ${pts[0].day}`;
+      $('mrr-delta').textContent = `${diff >= 0 ? '+' : '−'}${money(Math.abs(diff), m.currency)} since ${fmtDay(pts[0].day)}`;
       $('mrr-delta').style.color = diff >= 0 ? 'var(--up)' : 'var(--down)';
     } else {
       $('mrr-delta').textContent = '';
@@ -211,7 +220,7 @@
     drawRange();
 
     const who = (p) => p.name || p.email || 'Unnamed';
-    const day = (iso) => (iso ? iso.slice(0, 10) : '');
+    const day = fmtDay;
     const ml = d.members;
     // Access gaps per person (Discord: ies_v_access_gaps, member portal:
     // ies_v_portal_gaps), keyed by lower-cased email. Gaps marked expected in
@@ -279,17 +288,21 @@
       : '';
 
     fillList('list-never', d.never, (p) =>
-      item(p.name || p.email || 'Unnamed', p.date_added ? p.date_added.slice(0, 10) : ''));
+      item(p.name || p.email || 'Unnamed', fmtDay(p.date_added)));
     fillList('list-skool', d.skool || [], (p) =>
-      item(p.name || p.email || 'Unnamed', p.date_added ? p.date_added.slice(0, 10) : ''));
+      item(p.name || p.email || 'Unnamed', fmtDay(p.date_added)));
 
-    // Latest run per source. A failed last run shows in red, so a broken sync is obvious.
+    // Status of every source we track, each with a dot: green = fine, amber =
+    // late (hourly sync over 2h old, daily snapshot over 26h), red = last run failed.
     const sync = $('sync');
-    sync.replaceChildren(el('span', null, 'Last Synced:'));
+    sync.replaceChildren(el('span', 'sync-title', 'Last Synced:'));
     const labels = { stripe: 'Stripe', ghl: 'GoHighLevel', discord: 'Discord', snapshot: 'Daily Snapshot' };
     for (const src of Object.keys(labels)) {
       const r = d.runs.find((x) => x.source === src || (src === 'stripe' && x.source === 'stripe-backfill'));
-      const s = el('span', r && !r.ok ? 'bad' : null, `${labels[src]} ${r ? ago(r.ran_at) : 'never'}${r && !r.ok ? ' (failed)' : ''}`);
+      const age = r ? Date.now() - new Date(r.ran_at).getTime() : Infinity;
+      const late = age > (src === 'snapshot' ? 26 : 2) * 3600000;
+      const state = r && !r.ok ? 'bad' : late ? 'late' : 'good';
+      const s = el('span', `src ${state}`, `${labels[src]} ${r ? ago(r.ran_at) : 'never'}${state === 'bad' ? ' (failed)' : ''}`);
       if (r && r.detail) s.title = r.detail;
       sync.appendChild(s);
     }

@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&family=Saira+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=49">
+  <link rel="stylesheet" href="css/app.css?v=53">
 </head>
 <body>
   <header class="top">
@@ -114,11 +114,11 @@
         <summary><span class="label">New This Month</span><button type="button" class="tip" aria-label="What is New This Month?" data-tip="People who started a paid membership since the 1st of this month (UK time), including anyone who came back.">i</button><span id="new" class="num val up" data-count>–</span></summary>
         <ul></ul>
       </details>
-      <details class="card list stat" id="list-churned">
+      <details class="card list stat" id="list-churned" data-zero-ok>
         <summary><span class="label">Churned This Month</span><button type="button" class="tip" aria-label="What is Churned This Month?" data-tip="People whose membership ended since the 1st of this month (UK time).">i</button><span id="churned" class="num val down" data-count>–</span></summary>
         <ul></ul>
       </details>
-      <details class="card list stat" id="list-pastdue">
+      <details class="card list stat" id="list-pastdue" data-zero-ok>
         <summary><span class="label">Past Due</span><button type="button" class="tip" aria-label="What is Past Due?" data-tip="Members whose latest payment failed. Stripe retries the card for about a week, then cancels. Each one gets an alert in #moderator-chat so it can be followed up.">i</button><span id="pastdue" class="num val" data-count>–</span></summary>
         <p class="hint">Payment failed, still counted in MRR</p>
         <ul></ul>
@@ -132,23 +132,23 @@
 
     <h2>Follow Up</h2>
     <section class="grid cols-4">
-      <details class="card list" id="list-discord">
+      <details class="card list" id="list-discord" data-zero-ok>
         <summary><span class="label">In Discord, Not Paying</span><button type="button" class="tip" aria-label="What is In Discord, Not Paying?" data-tip="People who still have a role in Discord but no paid membership. Usually means their role needs removing.">i</button><span class="num val" data-count>–</span><span id="discord-warn" class="warn-note" hidden></span></summary>
         <p class="hint">People who still have a role in Discord (Member or any other) but no active subscription. <b>Unmatched</b> means no GoHighLevel contact has their Discord username yet.</p>
         <p id="discord-detail" class="warn-detail" hidden></p>
         <ul></ul>
       </details>
-      <details class="card list" id="list-freeportal">
+      <details class="card list" id="list-freeportal" data-zero-ok>
         <summary><span class="label">Course Access, Not Paying</span><button type="button" class="tip" aria-label="What is Course Access, Not Paying?" data-tip="People who can still get into the course but aren&#x27;t paying, a comp or staff. Usually means their access needs revoking in GoHighLevel.">i</button><span class="num val" data-count>–</span></summary>
         <p class="hint">Can get into the course but aren't paying, a comp or staff. Remove their access or tag them ies-comp.</p>
         <ul></ul>
       </details>
-      <details class="card list" id="list-never">
+      <details class="card list" id="list-never" data-zero-ok>
         <summary><span class="label">Abandoned Checkout</span><button type="button" class="tip" aria-label="What is Abandoned Checkout?" data-tip="People who started checkout and entered their email but never paid. Good people to follow up with.">i</button><span class="num val" data-count>–</span></summary>
         <p class="hint">Entered their email on the checkout page but never paid. Excludes imports, test accounts and internal accounts.</p>
         <ul></ul>
       </details>
-      <details class="card list" id="list-skool">
+      <details class="card list" id="list-skool" data-zero-ok>
         <summary><span class="label">Skool, Never Joined</span><button type="button" class="tip" aria-label="What is Skool, Never Joined?" data-tip="Members from the old Skool community who never started a membership here.">i</button><span class="num val" data-count>–</span></summary>
         <p class="hint">Imported from the old Skool community (tag skool-migrant) and never started a membership.</p>
         <ul></ul>
@@ -159,9 +159,9 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/config.js?v=49"></script>
-  <script src="js/demo.js?v=49"></script>
-  <script src="js/render.js?v=49"></script>
-  <script src="js/app.js?v=49"></script>
+  <script src="js/config.js?v=53"></script>
+  <script src="js/demo.js?v=53"></script>
+  <script src="js/render.js?v=53"></script>
+  <script src="js/app.js?v=53"></script>
 </body>
 </html>
