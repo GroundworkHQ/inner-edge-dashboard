@@ -168,3 +168,6 @@ details.card summary .label { padding-right: 26px; }
   -webkit-mask-image: radial-gradient(ellipse 62% 60% at 50% 50%, #000 55%, transparent 100%);
           mask-image: radial-gradient(ellipse 62% 60% at 50% 50%, #000 55%, transparent 100%); }
 
+
+/* Give the sign-in block some room below the header. */
+#login { padding-top: 96px; }
