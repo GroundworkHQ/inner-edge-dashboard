@@ -58,20 +58,40 @@
     location.reload();
   });
 
+  // Pulls fresh data from GHL, Stripe and Discord (ies-sync-now runs the same
+  // syncs as the hourly crons, server-side), then re-reads the tables. If the
+  // sync call fails the page still reloads what's already there.
+  $('refresh').addEventListener('click', async () => {
+    const btn = $('refresh');
+    btn.disabled = true; btn.textContent = 'Syncing...';
+    try {
+      const { error } = await sb.functions.invoke('ies-sync-now');
+      if (error) console.error(error);
+      btn.textContent = 'Refreshing...';
+      const { data: { session } } = await sb.auth.getSession();
+      await load(session);
+      if (error) $('sync').prepend('Could not sync just now, showing the last hourly sync. ');
+    } catch (err) {
+      console.error(err);
+      $('sync').textContent = 'Could not load the data. Try Refresh again.';
+    } finally {
+      btn.disabled = false; btn.textContent = 'Refresh';
+    }
+  });
+
   async function load(session) {
-    if (!session) { $('signout').hidden = true; $('setpw-open').hidden = true; show('login'); return; }
-    $('signout').hidden = false;
-    $('setpw-open').hidden = false;
+    if (!session) { ['signout', 'setpw-open', 'refresh'].forEach((id) => ($(id).hidden = true)); show('login'); return; }
+    ['signout', 'setpw-open', 'refresh'].forEach((id) => ($(id).hidden = false));
 
     const { data: viewer } = await sb.from('ies_viewers').select('email').maybeSingle();
-    if (!viewer) { $('denied-email').textContent = session.user.email; show('denied'); return; }
+    if (!viewer) { $('refresh').hidden = true; $('denied-email').textContent = session.user.email; show('denied'); return; }
 
     const [metrics, members, trend, people, discord, runs, gaps, portal] = await Promise.all([
       sb.from('ies_v_metrics').select('*').single(),
       sb.from('ies_v_members').select('customer_id, name, email, started_at, ended_at, current_period_end, is_paying, is_new, is_churned, is_past_due, is_cancelling'),
-      sb.from('ies_mrr_daily').select('day, mrr_cents').order('day'),
+      sb.from('ies_mrr_daily').select('day, mrr_cents, taken_at').order('day'),
       sb.from('ies_v_people').select('name, email, discord_username, is_staff, is_comp, is_paying, ever_subscribed, date_added, is_skool_migrant, is_signup, is_ignored'),
-      sb.from('ies_v_discord').select('username, display_name, contact_name, status').in('status', ['not_paying', 'unmatched']).eq('has_member_role', true).order('status'),
+      sb.from('ies_v_discord').select('username, display_name, contact_name, status').in('status', ['not_paying', 'unmatched']).eq('has_any_role', true).order('status'),
       sb.from('ies_sync_runs').select('source, ok, detail, ran_at').order('ran_at', { ascending: false }).limit(60),
       sb.from('ies_v_access_gaps').select('name, email, kind, issue'),
       sb.from('ies_v_portal_gaps').select('name, email, kind, issue'),

@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&family=Saira+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=31">
+  <link rel="stylesheet" href="css/app.css?v=35">
 </head>
 <body>
   <header class="top">
@@ -19,6 +19,7 @@
     </div>
     <div class="top-right">
       <span id="demo-flag" class="pill warn" hidden>Demo Data</span>
+      <button id="refresh" class="ghost" hidden>Refresh</button>
       <button id="setpw-open" class="ghost" hidden>Set Password</button>
       <button id="signout" class="ghost" hidden>Sign Out</button>
     </div>
@@ -66,6 +67,7 @@
       <div class="mrr-block">
         <div class="label">Monthly Recurring Revenue</div>
         <div id="mrr" class="big num">–</div>
+        <div id="mrr-day" class="muted num"></div>
         <div id="mrr-delta" class="muted num"></div>
       </div>
       <div class="chart-wrap">
@@ -118,7 +120,7 @@
     <section class="grid cols-4">
       <details class="card list" id="list-discord">
         <summary><span class="label">In Discord, Not Paying</span><span class="num val" data-count>–</span><span id="discord-warn" class="warn-note" hidden></span></summary>
-        <p class="hint">People who still have the Member role in Discord but no active subscription. <b>Unmatched</b> means no GoHighLevel contact has their Discord username yet.</p>
+        <p class="hint">People who still have a role in Discord (Member or any other) but no active subscription. <b>Unmatched</b> means no GoHighLevel contact has their Discord username yet.</p>
         <ul></ul>
       </details>
       <details class="card list" id="list-freeportal">
@@ -142,9 +144,9 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/config.js?v=31"></script>
-  <script src="js/demo.js?v=31"></script>
-  <script src="js/render.js?v=31"></script>
-  <script src="js/app.js?v=31"></script>
+  <script src="js/config.js?v=35"></script>
+  <script src="js/demo.js?v=35"></script>
+  <script src="js/render.js?v=35"></script>
+  <script src="js/app.js?v=35"></script>
 </body>
 </html>

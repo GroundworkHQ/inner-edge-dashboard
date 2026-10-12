@@ -1,8 +1,9 @@
 # Only the per-function settings this repo relies on. The project itself is
 # internal-prod (kdgbivcufoarmvckworj); link with `supabase link` before deploy.
 #
-# None of these functions take a user login: Stripe signs its webhook, and the
-# scheduled ones check the x-ies-cron-secret header themselves.
+# Stripe signs its webhook and the scheduled ones check the x-ies-cron-secret
+# header themselves. ies-sync-now (the Refresh button) is the only one that
+# takes a user login.
 
 [functions.ies-stripe-webhook]
 verify_jwt = false
@@ -15,3 +16,6 @@ verify_jwt = false
 
 [functions.ies-discord-sync]
 verify_jwt = false
+
+[functions.ies-sync-now]
+verify_jwt = true

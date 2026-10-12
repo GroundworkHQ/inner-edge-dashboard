@@ -90,8 +90,23 @@
     const m = d.metrics;
     $('mrr').textContent = money(m.mrr_cents, m.currency);
 
+    // The chart ends on the live figure, so a churn today shows as a drop
+    // straight away instead of waiting for tonight's snapshot.
+    const today = new Date().toISOString().slice(0, 10);
+    const t = d.trend.filter((p) => p.day < today).concat({ day: today, mrr_cents: m.mrr_cents });
+
+    // Change vs the last snapshot taken before today (UTC).
+    const before = d.trend.filter((p) => (p.taken_at || p.day) < today);
+    const yday = before.reduce((a, b) => (!a || (b.taken_at || b.day) > (a.taken_at || a.day) ? b : a), null);
+    if (yday) {
+      const diff = m.mrr_cents - yday.mrr_cents;
+      $('mrr-day').textContent = `${diff > 0 ? '+' : diff < 0 ? '−' : '±'}${money(Math.abs(diff), m.currency)} since yesterday`;
+      $('mrr-day').style.color = diff > 0 ? 'var(--up)' : diff < 0 ? 'var(--down)' : '';
+    } else {
+      $('mrr-day').textContent = '';
+    }
+
     // Change vs the snapshot closest to 30 days ago.
-    const t = d.trend;
     if (t.length > 1) {
       const target = Date.now() - 30 * 86400000;
       const past = t.reduce((a, b) => Math.abs(new Date(b.day) - target) < Math.abs(new Date(a.day) - target) ? b : a);
