@@ -100,8 +100,51 @@
     box.classList.toggle('clear', !rows.length && box.hasAttribute('data-zero-ok'));
     const ul = box.querySelector('ul');
     ul.replaceChildren();
-    if (!rows.length) { ul.appendChild(el('li', 'empty', 'Nobody here')); return; }
-    for (const r of rows) ul.appendChild(toItem(r));
+    const records = [];
+    for (const r of rows) {
+      const li = toItem(r);
+      ul.appendChild(li);
+      // One CSV row per list row: what the card shows, plus the email when we have it.
+      const meta = li.querySelector('.meta')?.textContent || '';
+      records.push({
+        Name: li.querySelector('.who')?.firstChild?.textContent || '',
+        Email: r.email || r.contact_email || (meta.includes('@') && !meta.startsWith('@') ? meta : ''),
+        Discord: meta.startsWith('@') ? meta.slice(1) : '',
+        Detail: meta.includes('@') ? '' : meta,
+        Flag: li.querySelector('.tag')?.textContent || '',
+      });
+    }
+    if (!rows.length) ul.appendChild(el('li', 'empty', 'Nobody here'));
+    // "Download CSV" sits just above the list, only when there's something to download.
+    let dl = box.querySelector('.dl');
+    if (!dl) {
+      dl = el('button', 'link dl', 'Download CSV');
+      dl.type = 'button';
+      dl.addEventListener('click', () => downloadCsv(box, dl.records));
+      ul.before(dl);
+    }
+    dl.records = records;
+    dl.hidden = !records.length;
+  }
+
+  // Spreadsheet apps run cells starting with = + - @ as formulas, and names come
+  // from the CRM, so those get a leading apostrophe.
+  function csvCell(v) {
+    let t = String(v ?? '');
+    if (/^[=+\-@\t\r]/.test(t)) t = `'${t}`;
+    return /[",\n]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t;
+  }
+
+  function downloadCsv(box, records) {
+    const cols = ['Name', 'Email', 'Discord', 'Detail', 'Flag'].filter((c) => records.some((r) => r[c]));
+    const csv = [cols, ...records.map((r) => cols.map((c) => r[c]))].map((row) => row.map(csvCell).join(',')).join('\r\n');
+    const label = box.querySelector('summary .label')?.textContent.trim() || 'list';
+    const name = `inner-edge-${label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}-${new Date().toISOString().slice(0, 10)}.csv`;
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' }));
+    a.download = name;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   }
 
   // Names display Title Cased whatever Stripe/GHL/Discord hold ("david henry"
