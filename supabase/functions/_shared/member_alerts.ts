@@ -181,15 +181,14 @@ async function pastDueMessage(db: SupabaseClient, sub: Sub): Promise<string> {
   if (!isNew && cancellations === 0) tips.push("Long-standing member who has never left. Most likely an expired or replaced card, keep it light.");
   if (roles.some((r) => /coaching/i.test(r))) tips.push("In Coaching Corner, so they're engaged. Mention the coaching sessions.");
 
-  const since = !isNew && first ? ` You've been with us since ${fmt(first).replace(/^\d+ /, "")} and we'd hate to lose you.` : "";
   // Masked link: pasted into a DM, the member sees only "Update your card here"
   // and the long Stripe URL stays hidden.
   const fix = payUrl
     ? `It only takes a minute: [Update your card here](${payUrl})`
     : "Reply here and we'll send you the link to update it.";
-  const dm = cancellations > 0
-    ? `Hey ${firstName}, it's great having you back in Inner Edge. Quick heads up: your last membership payment didn't go through, which is usually just an expired or replaced card. ${fix}\n\nAnd if something's not working for you, I'd genuinely like to hear it.`
-    : `Hey ${firstName}, quick heads up from the Inner Edge team: your last membership payment didn't go through, which is usually just an expired or replaced card.${since} ${fix}\n\nThat way you don't lose access.`;
+  // One message for everyone. History stays in the alert for the mod; reminding a
+  // member they left before reads like we're keeping tabs on them.
+  const dm = `Hey ${firstName}, hope the trading's going well. Quick heads up: your last Inner Edge payment didn't go through, usually just an expired or replaced card. ${fix}\n\nAnd if something's not working for you, I'd genuinely like to hear it.`;
 
   return [
     `⚠️ **Payment Failed: ${name}**`,

@@ -44,8 +44,15 @@
         contact_name: i % 3 ? pick(i + 3) : null, status: i % 3 ? 'not_paying' : 'unmatched',
       })),
       missingDiscord: [],
-      accessGaps: [],
-      portalGaps: [],
+      // One of each warning, so the card counts, dropdown notes and name tags show.
+      accessGaps: [
+        { name: pick(8), email: email(8), kind: 'comp', issue: 'no_member_role' },
+        { name: pick(3), email: email(3), kind: 'paying', issue: 'not_in_discord' },
+      ],
+      portalGaps: [
+        { name: pick(8), email: email(8), kind: 'comp', issue: 'no_portal_access' },
+        { name: pick(5), email: email(5), kind: 'staff', issue: 'no_portal_access' },
+      ],
       skool: Array.from({ length: 10 }, (_, i) => ({ name: pick(i + 2), email: email(i + 2), date_added: trend[0].day })),
       never: Array.from({ length: 21 }, (_, i) => ({ name: pick(i + 5), email: email(i + 5), date_added: trend[i * 4].day })),
       runs: [

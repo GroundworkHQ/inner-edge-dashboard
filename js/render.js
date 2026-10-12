@@ -153,36 +153,54 @@
     const who = (p) => p.name || p.email || 'Unnamed';
     const day = (iso) => (iso ? iso.slice(0, 10) : '');
     const ml = d.members;
-    fillList('list-paid', ml.paid, (p) => item(who(p), `Since ${day(p.started_at)}`));
+    // Access gaps per person (Discord: ies_v_access_gaps, member portal:
+    // ies_v_portal_gaps), keyed by lower-cased email. Gaps marked expected in
+    // ies_gap_exceptions never reach the page.
+    const gapLabel = { not_in_discord: 'Not in Discord', no_member_role: 'No Discord Role', no_portal_access: 'No Portal Access' };
+    const gapsFor = new Map();
+    for (const g of [...(d.accessGaps || []), ...(d.portalGaps || []).filter((x) => x.issue === 'no_portal_access')]) {
+      const k = (g.email || g.name || '').toLowerCase();
+      if (!gapsFor.has(k)) gapsFor.set(k, []);
+      gapsFor.get(k).push(g);
+    }
+    const gapTag = (p) => {
+      const gs = gapsFor.get((p.email || p.name || '').toLowerCase());
+      return gs ? { cls: 'unmatched', text: gs.map((g) => gapLabel[g.issue]).join(' · ') } : null;
+    };
+    fillList('list-paid', ml.paid, (p) => item(who(p), `Since ${day(p.started_at)}`, gapTag(p)));
     fillList('list-new', ml.new, (p) => item(who(p), `Joined ${day(p.started_at)}`));
     fillList('list-churned', ml.churned, (p) => item(who(p), `Left ${day(p.ended_at)}`));
     fillList('list-pastdue', ml.pastdue, (p) => item(who(p), p.email || ''));
     fillList('list-cancelled', ml.cancelled, (p) =>
       item(who(p), p.ending ? `Ends ${day(p.when)}` : `Left ${day(p.when)}`, p.ending ? { cls: 'unmatched', text: 'Ending' } : null));
 
-    fillList('list-comps', d.comps, (p) => item(p.name || p.email || 'Unnamed', p.email));
-    fillList('list-staff', d.staff || [], (p) => item(p.name || p.email || 'Unnamed', p.email));
+    fillList('list-comps', d.comps, (p) => item(p.name || p.email || 'Unnamed', p.email, gapTag(p)));
+    fillList('list-staff', d.staff || [], (p) => item(p.name || p.email || 'Unnamed', p.email, gapTag(p)));
     fillList('list-discord', d.discord, (x) =>
       item(x.contact_name || x.display_name || x.username, '@' + x.username,
         x.status === 'unmatched' ? { cls: 'unmatched', text: 'Unmatched' } : null));
-    // People who should have access but don't, per card: Discord (ies_v_access_gaps)
-    // and the member portal (ies_v_portal_gaps). Flag the card and name them.
+    // People who should have access but don't, per card. The card face shows a
+    // count; the full notes sit at the top of the dropdown, and each name in the
+    // list carries a tag.
     const nameOf = (g) => g.name || g.email;
-    const gapNote = (cardId, warnId, kind) => {
-      const notes = [
-        ...(d.accessGaps || []).filter((g) => g.kind === kind).map((g) =>
-          `${nameOf(g)} ${g.issue === 'not_in_discord' ? 'is not in the Discord server' : 'has no Member role in Discord'}.`),
-        ...(d.portalGaps || []).filter((g) => g.kind === kind && g.issue === 'no_portal_access').map((g) =>
-          `${nameOf(g)} has no member portal access.`),
-      ];
-      const box = $(warnId);
-      $(cardId).classList.toggle('alert', notes.length > 0);
-      box.hidden = !notes.length;
-      box.textContent = notes.join(' ');
+    const gapNote = (cardId, warnId, detailId, kind) => {
+      const gs = [...(d.accessGaps || []), ...(d.portalGaps || []).filter((g) => g.issue === 'no_portal_access')]
+        .filter((g) => g.kind === kind);
+      const notes = gs.map((g) => `${nameOf(g)} ${{
+        not_in_discord: 'is not in the Discord server',
+        no_member_role: 'has no Member role in Discord',
+        no_portal_access: 'has no member portal access',
+      }[g.issue]}.`);
+      const people = new Set(gs.map((g) => (g.email || g.name || '').toLowerCase())).size;
+      $(cardId).classList.toggle('alert', people > 0);
+      $(warnId).hidden = !people;
+      $(warnId).textContent = people ? `⚠ ${people} to check` : '';
+      $(detailId).hidden = !people;
+      $(detailId).textContent = notes.join(' ');
     };
-    gapNote('list-paid', 'paid-warn', 'paying');
-    gapNote('list-comps', 'comps-warn', 'comp');
-    gapNote('list-staff', 'staff-warn', 'staff');
+    gapNote('list-paid', 'paid-warn', 'paid-detail', 'paying');
+    gapNote('list-comps', 'comps-warn', 'comps-detail', 'comp');
+    gapNote('list-staff', 'staff-warn', 'staff-detail', 'staff');
 
     // Portal access without a reason to have it.
     const free = (d.portalGaps || []).filter((g) => g.issue === 'unpaid_portal_access');
@@ -194,7 +212,9 @@
     const miss = d.missingDiscord || [];
     $('list-discord').classList.toggle('alert', miss.length > 0);
     warn.hidden = !miss.length;
-    warn.textContent = miss.length
+    warn.textContent = miss.length ? `⚠ ${miss.length} missing a Discord name` : '';
+    $('discord-detail').hidden = !miss.length;
+    $('discord-detail').textContent = miss.length
       ? `${miss.length} paying member${miss.length > 1 ? 's' : ''} from the last 2 weeks ${miss.length > 1 ? 'have' : 'has'} no Discord name yet: ${miss.map((p) => p.name || p.email).join(', ')}. Either they never gave one (still Pending in the Zapier table) or the "Add Discord Name" Zap missed them.`
       : '';
 

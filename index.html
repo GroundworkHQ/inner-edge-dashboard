@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&family=Saira+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=37">
+  <link rel="stylesheet" href="css/app.css?v=39">
 </head>
 <body>
   <header class="top">
@@ -85,16 +85,19 @@
     <section class="grid cols-3">
       <details class="card list stat" id="list-paid">
         <summary><span class="label">Paid Members</span><span id="paid" class="num val" data-count>–</span><span id="paid-warn" class="warn-note" hidden></span></summary>
+        <p id="paid-detail" class="warn-detail" hidden></p>
         <ul></ul>
       </details>
       <details class="card list" id="list-comps">
         <summary><span class="label">Comps</span><span class="num val" data-count>–</span><span id="comps-warn" class="warn-note" hidden></span></summary>
         <p class="hint">Free access, tagged ies-comp in GoHighLevel.</p>
+        <p id="comps-detail" class="warn-detail" hidden></p>
         <ul></ul>
       </details>
       <details class="card list" id="list-staff">
         <summary><span class="label">Staff</span><span class="num val" data-count>–</span><span id="staff-warn" class="warn-note" hidden></span></summary>
         <p class="hint">The team, tagged ies-team in GoHighLevel.</p>
+        <p id="staff-detail" class="warn-detail" hidden></p>
         <ul></ul>
       </details>
     </section>
@@ -126,6 +129,7 @@
       <details class="card list" id="list-discord">
         <summary><span class="label">In Discord, Not Paying</span><span class="num val" data-count>–</span><span id="discord-warn" class="warn-note" hidden></span></summary>
         <p class="hint">People who still have a role in Discord (Member or any other) but no active subscription. <b>Unmatched</b> means no GoHighLevel contact has their Discord username yet.</p>
+        <p id="discord-detail" class="warn-detail" hidden></p>
         <ul></ul>
       </details>
       <details class="card list" id="list-freeportal">
@@ -149,9 +153,9 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/config.js?v=37"></script>
-  <script src="js/demo.js?v=37"></script>
-  <script src="js/render.js?v=37"></script>
-  <script src="js/app.js?v=37"></script>
+  <script src="js/config.js?v=39"></script>
+  <script src="js/demo.js?v=39"></script>
+  <script src="js/render.js?v=39"></script>
+  <script src="js/app.js?v=39"></script>
 </body>
 </html>
