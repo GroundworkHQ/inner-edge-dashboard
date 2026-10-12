@@ -165,7 +165,7 @@ async function pastDueMessage(db: SupabaseClient, sub: Sub): Promise<string> {
   const isNew = first ? Date.now() - new Date(first).getTime() < 60 * DAY : false;
 
   const story: string[] = [];
-  story.push(`• **Member since:** ${fmt(first)} (${first ? tenure(first) : "unknown"})`);
+  story.push(`• **Member Since:** ${fmt(first)} (${first ? tenure(first) : "unknown"})`);
   story.push(`• **Paying:** ${money(sub.monthly_amount_cents)}/mo, this subscription started ${fmt(sub.started_at)}`);
   story.push(`• **History:** ${cancellations === 0 ? "never cancelled before" : `cancelled ${cancellations} time${cancellations === 1 ? "" : "s"} before, rejoined ${rejoins} time${rejoins === 1 ? "" : "s"}`}`);
   story.push(discordName
@@ -173,7 +173,7 @@ async function pastDueMessage(db: SupabaseClient, sub: Sub): Promise<string> {
     // is empty, so it never pings them.
     ? `• **Discord:** ${member ? `<@${member.user_id}> (@${discordName})` : `@${discordName}`}${member ? `, joined ${fmt(member.joined_at)}${roles.length ? `, roles: ${roles.join(", ")}` : ", no roles"}` : " (not found in the server)"}`
     : `• **Discord:** no username on file, reach out by email: ${cust?.email ?? "unknown"}`);
-  if (tags.includes("skool-migrant")) story.push("• **Came over from Skool**");
+  if (tags.includes("skool-migrant")) story.push("• **Came Over from Skool**");
 
   const tips: string[] = [];
   if (isNew) tips.push("New member hitting their first renewal. Often just a card limit or a bank blocking a new merchant.");
@@ -182,28 +182,29 @@ async function pastDueMessage(db: SupabaseClient, sub: Sub): Promise<string> {
   if (roles.some((r) => /coaching/i.test(r))) tips.push("In Coaching Corner, so they're engaged. Mention the coaching sessions.");
 
   const since = !isNew && first ? ` You've been with us since ${fmt(first).replace(/^\d+ /, "")} and we'd hate to lose you.` : "";
-  // The link sits on its own line so it pastes and opens cleanly in a DM.
+  // Masked link: pasted into a DM, the member sees only "Update your card here"
+  // and the long Stripe URL stays hidden.
   const fix = payUrl
-    ? `You can update it here, it takes a minute:\n${payUrl}`
+    ? `It only takes a minute: [Update your card here](${payUrl})`
     : "Reply here and we'll send you the link to update it.";
   const dm = cancellations > 0
     ? `Hey ${firstName}, it's great having you back in Inner Edge. Quick heads up: your last membership payment didn't go through, which is usually just an expired or replaced card. ${fix}\nAnd if something's not working for you, I'd genuinely like to hear it.`
     : `Hey ${firstName}, quick heads up from the Inner Edge team: your last membership payment didn't go through, which is usually just an expired or replaced card.${since} ${fix}\nThat way you don't lose access.`;
 
   return [
-    `⚠️ **Payment failed: ${name}**`,
+    `⚠️ **Payment Failed: ${name}**`,
     "",
-    `• **Past due since:** ${pastDueSince ? `${fmt(pastDueSince)} (${relDays(pastDueSince)})` : "unknown"}`,
-    `• **Stripe cancels it:** ${retriesDone ? "any time now, all retries are used up" : cancelsOn ? `around ${fmt(cancelsOn)} (${relDays(cancelsOn)}) unless the card is updated` : "unknown"}`,
+    `• **Past Due Since:** ${pastDueSince ? `${fmt(pastDueSince)} (${relDays(pastDueSince)})` : "unknown"}`,
+    `• **Stripe Cancels It:** ${retriesDone ? "any time now, all retries are used up" : cancelsOn ? `around ${fmt(cancelsOn)} (${relDays(cancelsOn)}) unless the card is updated` : "unknown"}`,
     ...story,
     invoiceLine.trimEnd() || null,
     // Masked link: Discord shows the text, the long Stripe URL stays hidden.
     payUrl ? `• **[Payment Update Link](${payUrl})**` : null,
     "",
-    "**How to approach it**",
+    "**How to Approach It**",
     ...tips.map((t) => `• ${t}`),
     "",
-    "**Sample DM** (copy, tweak, send)",
+    "**Sample DM** (Copy, Tweak, Send)",
     "```",
     dm,
     "```",
