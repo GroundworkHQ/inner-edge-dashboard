@@ -188,8 +188,8 @@ async function pastDueMessage(db: SupabaseClient, sub: Sub): Promise<string> {
     ? `It only takes a minute: [Update your card here](${payUrl})`
     : "Reply here and we'll send you the link to update it.";
   const dm = cancellations > 0
-    ? `Hey ${firstName}, it's great having you back in Inner Edge. Quick heads up: your last membership payment didn't go through, which is usually just an expired or replaced card. ${fix}\nAnd if something's not working for you, I'd genuinely like to hear it.`
-    : `Hey ${firstName}, quick heads up from the Inner Edge team: your last membership payment didn't go through, which is usually just an expired or replaced card.${since} ${fix}\nThat way you don't lose access.`;
+    ? `Hey ${firstName}, it's great having you back in Inner Edge. Quick heads up: your last membership payment didn't go through, which is usually just an expired or replaced card. ${fix}\n\nAnd if something's not working for you, I'd genuinely like to hear it.`
+    : `Hey ${firstName}, quick heads up from the Inner Edge team: your last membership payment didn't go through, which is usually just an expired or replaced card.${since} ${fix}\n\nThat way you don't lose access.`;
 
   return [
     `⚠️ **Payment Failed: ${name}**`,
