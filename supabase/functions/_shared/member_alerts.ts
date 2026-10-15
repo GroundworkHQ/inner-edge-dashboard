@@ -71,8 +71,8 @@ export async function runPastDueAlerts(db: SupabaseClient): Promise<string> {
     const paid = sub.status === "active" || sub.status === "trialing";
     const name = await customerName(db, alert.customer_id);
     await post(hook, paid
-      ? `✅ **${name}** paid. Their membership is back to normal, no need to reach out.`
-      : `❌ **${name}**'s subscription was cancelled after the failed payment (Stripe status: ${sub.status}). Check their course access and Discord role are removed.`,
+      ? `✅ **${name}** paid. {ping} Their membership is back to normal, no need to reach out.`
+      : `❌ **${name}**'s subscription was cancelled after the failed payment (Stripe status: ${sub.status}). {ping} Check their course access and Discord role are removed.`,
       pingIds(paid ? "IES_DISCORD_ALERT_PING" : "IES_DISCORD_ACCESS_PING"));
     await db.from("ies_member_alerts").update({ resolved_at: new Date().toISOString(), resolution: paid ? "paid" : "cancelled" }).eq("id", alert.id);
     settled++;
@@ -88,8 +88,12 @@ function pingIds(name: "IES_DISCORD_ALERT_PING" | "IES_DISCORD_ACCESS_PING"): st
   return (Deno.env.get(name) ?? "").split(",").map((x) => x.trim()).filter((x) => /^\d{15,25}$/.test(x));
 }
 
+// Tags go where the message puts "{ping}" (right before the ask), otherwise up front.
 async function post(hook: string, content: string, ping: string[]) {
-  const text = ping.length ? `${ping.map((id) => `<@${id}>`).join(" ")} ${content}` : content;
+  const tags = ping.map((id) => `<@${id}>`).join(" ");
+  const text = content.includes("{ping}")
+    ? content.replace(tags ? "{ping}" : "{ping} ", tags)
+    : tags ? `${tags} ${content}` : content;
   const res = await fetch(hook, {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -236,7 +240,7 @@ async function pastDueMessage(db: SupabaseClient, sub: Sub): Promise<string> {
     // Masked link: Discord shows the text, the long Stripe URL stays hidden.
     payUrl ? `• **[Payment Update Link](${payUrl})**` : null,
     "",
-    "**How to Approach It**",
+    "**How to Approach It** {ping}",
     ...tips.map((t) => `• ${t}`),
     "",
     "**Sample DM** (Copy, Tweak, Send)",
