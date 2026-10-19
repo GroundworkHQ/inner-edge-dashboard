@@ -151,6 +151,21 @@ details.list.clear:not(.alert) summary .val::after { content: '✓ All clear'; f
   .brand span { font-size: 17px; }
 }
 
+/* Find a Member: search box with results right under it. */
+.find { display: grid; gap: 10px; margin-bottom: 14px; }
+.find input { width: 100%; }
+.find ul { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.find li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.find li .info { display: flex; flex-direction: column; min-width: 0; }
+.find li .who { color: var(--chrome); font-size: 14px; }
+.find li .meta { color: var(--muted); font: 12px var(--f-mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.find li.empty { color: var(--muted); justify-content: center; font-size: 13px; }
+.find .stripe-link { flex: none; color: var(--electric); font: 600 13px/1 var(--f-body); text-decoration: none; padding: 8px 12px;
+  border: 1px solid var(--line-2); border-radius: 10px; white-space: nowrap; }
+.find .stripe-link:hover { border-color: var(--electric); }
+.tag.paying { color: var(--up); background: rgba(33, 229, 138, .1); }
+.tag.gone { color: var(--muted); background: rgba(124, 140, 166, .12); }
+
 /* Info buttons: top-right of each card, inline next to the MRR label. */
 details.card { position: relative; }
 .tip { width: 18px; height: 18px; padding: 0; border-radius: 50%; border: 1px solid var(--line-2); background: transparent;

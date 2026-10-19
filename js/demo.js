@@ -55,6 +55,13 @@
       ],
       skool: Array.from({ length: 10 }, (_, i) => ({ name: pick(i + 2), email: email(i + 2), date_added: trend[0].day })),
       never: Array.from({ length: 21 }, (_, i) => ({ name: pick(i + 5), email: email(i + 5), date_added: trend[i * 4].day })),
+      search: [
+        ...Array.from({ length: 12 }, (_, i) => ({ name: pick(i), email: email(i), customer_id: `cus_Demo${i}`, status: 'Paying', when: trend[i * 5].day, verb: 'Since' })),
+        { name: pick(9), email: email(9), customer_id: 'cus_Demo9b', status: 'Past Due', when: trend[88].day, verb: 'Due' },
+        { name: pick(11), email: email(11), customer_id: 'cus_Demo11b', status: 'Ending', when: new Date(Date.now() + 6 * 86400000).toISOString(), verb: 'Ends' },
+        { name: pick(14), email: email(14), customer_id: 'cus_Demo14', status: 'Cancelled', when: trend[40].day, verb: 'Left' },
+        { name: pick(7), email: email(7), status: 'Comp' },
+      ],
       runs: [
         { source: 'stripe', ok: true, ran_at: new Date(Date.now() - 4 * 60000).toISOString() },
         { source: 'ghl', ok: true, ran_at: new Date(Date.now() - 22 * 60000).toISOString(), detail: '128 contacts' },

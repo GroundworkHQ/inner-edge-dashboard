@@ -238,8 +238,49 @@
   if (showCur === 'gbp' && !gbpRate) loadRate().then((ok) => { if (ok && lastData) window.renderDashboard(lastData); paintCur(); });
   paintCur();
 
+  // Find a Member: type part of a name or email, every word must match. Stripe
+  // customers get a link straight to their Stripe profile (opens a new tab), so
+  // a cancel is search, click, cancel.
+  let searchRows = [];
+  const STATUS_CLS = { Paying: 'paying', 'Past Due': 'unmatched', Ending: 'unmatched', Cancelled: 'gone', Staff: 'staff', Comp: 'staff', 'No Membership': 'gone' };
+  function drawSearch() {
+    const box = $('find-results');
+    const words = $('find').value.toLowerCase().trim().split(/\s+/).filter(Boolean);
+    box.replaceChildren();
+    box.hidden = !words.length;
+    if (!words.length) return;
+    const hits = searchRows
+      .filter((r) => { const hay = `${r.name || ''} ${r.email || ''}`.toLowerCase(); return words.every((w) => hay.includes(w)); })
+      .sort((a, b) => (a.customer_id ? 0 : 1) - (b.customer_id ? 0 : 1) || (a.name || a.email || '').localeCompare(b.name || b.email || ''));
+    for (const r of hits.slice(0, 8)) {
+      const li = el('li');
+      const left = el('span', 'who', properName(r.name || r.email || 'Unnamed'));
+      left.appendChild(el('span', `tag ${STATUS_CLS[r.status] || 'gone'}`, r.status));
+      const meta = el('span', 'meta', [r.email, r.when ? `${r.verb} ${fmtDay(r.when)}` : ''].filter(Boolean).join(' · '));
+      const info = el('span', 'info');
+      info.append(left, meta);
+      li.appendChild(info);
+      if (/^cus_[A-Za-z0-9]+$/.test(r.customer_id || '')) {
+        const a = el('a', 'stripe-link', 'Open in Stripe ↗');
+        a.href = `https://dashboard.stripe.com/customers/${r.customer_id}`;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        li.appendChild(a);
+      } else {
+        li.appendChild(el('span', 'meta', 'Not in Stripe'));
+      }
+      box.appendChild(li);
+    }
+    if (!hits.length) box.appendChild(el('li', 'empty', 'No matches'));
+    else if (hits.length > 8) box.appendChild(el('li', 'empty', `${hits.length - 8} more, keep typing to narrow it down`));
+  }
+  $('find').addEventListener('input', drawSearch);
+  $('find').addEventListener('keydown', (e) => { if (e.key === 'Escape') { e.target.value = ''; drawSearch(); } });
+
   window.renderDashboard = function (d) {
     lastData = d;
+    searchRows = d.search || [];
+    drawSearch();
     const m = d.metrics;
     $('mrr').textContent = money(m.mrr_cents, m.currency);
 

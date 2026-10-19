@@ -124,6 +124,7 @@
       runs: runs.data,
       accessGaps: gaps.data,
       portalGaps: portal.data,
+      search: searchIndex(members.data, p),
     });
     show('dash');
   }
@@ -183,6 +184,32 @@
       if (!prev || (r.ending && !prev.ending) || (!prev.ending && (r.when || '') > (prev.when || ''))) byPerson.set(key, r);
     }
     return [...byPerson.values()].sort((a, b) => (b.ending - a.ending) || (b.when || '').localeCompare(a.when || ''));
+  }
+
+  // Find a Member: one entry per Stripe customer, showing their best status
+  // across subscriptions, plus GHL contacts who never had one (comps, staff,
+  // signups). Stripe entries carry the customer id for the Stripe link.
+  function searchIndex(rows, people) {
+    const rank = (r) => (r.is_paying && !r.is_past_due && !r.is_cancelling ? 4 : r.is_past_due ? 3 : r.is_cancelling ? 2 : 1);
+    const best = new Map();
+    for (const r of rows) {
+      if (!r.name && !r.email) continue;
+      const prev = best.get(r.customer_id);
+      if (!prev || rank(r) > rank(prev) || (rank(r) === rank(prev) && (r.ended_at || '') > (prev.ended_at || ''))) best.set(r.customer_id, r);
+    }
+    const out = [...best.values()].map((r) => ({
+      name: r.name, email: r.email, customer_id: r.customer_id,
+      ...(rank(r) === 4 ? { status: 'Paying', when: r.started_at, verb: 'Since' }
+        : rank(r) === 3 ? { status: 'Past Due', when: r.current_period_end, verb: 'Due' }
+        : rank(r) === 2 ? { status: 'Ending', when: r.current_period_end, verb: 'Ends' }
+        : { status: 'Cancelled', when: r.ended_at, verb: 'Left' }),
+    }));
+    const inStripe = new Set(out.map((x) => (x.email || '').toLowerCase()));
+    for (const x of people) {
+      if (!x.email || x.is_ignored || x.ever_subscribed || inStripe.has(x.email.toLowerCase())) continue;
+      out.push({ name: x.name, email: x.email, status: x.is_staff ? 'Staff' : x.is_comp ? 'Comp' : 'No Membership' });
+    }
+    return out;
   }
 
   // Members who joined 1 to 14 days ago and are paying, but whose GHL contact
