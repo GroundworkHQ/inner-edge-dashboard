@@ -173,7 +173,13 @@ details.list.clear:not(.alert) summary .val::after { content: '✓ All clear'; f
 .find .stripe-link:hover { border-color: var(--electric); }
 /* Phones: search gets its own full-width row under the logo and buttons. */
 @media (max-width: 640px) {
-  .top { flex-wrap: wrap; row-gap: 10px; }
+  .top { flex-wrap: wrap; row-gap: 10px; column-gap: 8px; }
+  /* Logo and buttons share the first row, so both get a little smaller. */
+  .brand { gap: 8px; }
+  .brand img { width: 34px; height: auto; }
+  .brand span { font-size: 15px; white-space: nowrap; }
+  .top-right { margin-left: auto; gap: 6px; }
+  .top-right button.ghost { padding: 7px 8px; font-size: 12px; }
   .find { order: 3; flex-basis: 100%; max-width: none; }
   .find ul { width: 100%; }
   .find input { font-size: 16px; } /* under 16px makes iPhones zoom in on focus */
