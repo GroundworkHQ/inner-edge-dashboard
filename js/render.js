@@ -274,8 +274,18 @@
     if (!hits.length) box.appendChild(el('li', 'empty', 'No matches'));
     else if (hits.length > 8) box.appendChild(el('li', 'empty', `${hits.length - 8} more, keep typing to narrow it down`));
   }
+  // Results drop down under the header box: Escape clears it, a click elsewhere
+  // closes it (focusing the box again reopens it), and "/" jumps to it from
+  // anywhere on the page.
   $('find').addEventListener('input', drawSearch);
-  $('find').addEventListener('keydown', (e) => { if (e.key === 'Escape') { e.target.value = ''; drawSearch(); } });
+  $('find').addEventListener('focus', drawSearch);
+  $('find').addEventListener('keydown', (e) => { if (e.key === 'Escape') { e.target.value = ''; drawSearch(); e.target.blur(); } });
+  document.addEventListener('click', (e) => { if (!e.target.closest('#find-wrap')) $('find-results').hidden = true; });
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== '/' || e.metaKey || e.ctrlKey || $('find-wrap').hidden || e.target.closest?.('input, textarea')) return;
+    e.preventDefault();
+    $('find').focus();
+  });
 
   window.renderDashboard = function (d) {
     lastData = d;

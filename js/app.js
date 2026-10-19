@@ -3,7 +3,10 @@
 // RLS against ies_viewers, not by this file.
 (function () {
   const $ = (id) => document.getElementById(id);
-  const show = (id) => ['login', 'denied', 'dash', 'setpw'].forEach((s) => ($(s).hidden = s !== id));
+  const show = (id) => {
+    ['login', 'denied', 'dash', 'setpw'].forEach((s) => ($(s).hidden = s !== id));
+    $('find-wrap').hidden = id !== 'dash';
+  };
 
   // ?demo=1 renders invented data with no login, for reviewing the layout.
   if (new URLSearchParams(location.search).has('demo')) {

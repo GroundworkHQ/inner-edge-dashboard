@@ -151,11 +151,19 @@ details.list.clear:not(.alert) summary .val::after { content: '✓ All clear'; f
   .brand span { font-size: 17px; }
 }
 
-/* Find a Member: search box with results right under it. */
-.find { display: grid; gap: 10px; margin-bottom: 14px; }
-.find input { width: 100%; }
-.find ul { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+/* Find a Member: search box in the header, results drop down under it. */
+.top { gap: 16px; }
+.find { position: relative; flex: 1; max-width: 440px; margin: 0 auto; }
+.find input { width: 100%; font-size: 14px; padding: 8px 34px 8px 12px; background: rgba(4, 6, 12, .6); }
+.find input::-webkit-search-cancel-button { display: none; }
+.find-key { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;
+  font: 11px/1 var(--f-mono); color: var(--muted); border: 1px solid var(--line-2); border-radius: 4px; padding: 3px 6px; }
+.find input:focus + .find-key, .find input:not(:placeholder-shown) + .find-key { display: none; }
+.find ul { position: absolute; left: 50%; transform: translateX(-50%); width: max(100%, 540px); top: calc(100% + 6px); z-index: 40; max-height: 70vh; overflow: auto;
+  list-style: none; margin: 0; padding: 4px 14px; border: 1px solid var(--line-2); border-radius: 12px; background: var(--panel-2);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, .55); }
 .find li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.find li:last-child { border-bottom: 0; }
 .find li .info { display: flex; flex-direction: column; min-width: 0; }
 .find li .who { color: var(--chrome); font-size: 14px; }
 .find li .meta { color: var(--muted); font: 12px var(--f-mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -163,6 +171,14 @@ details.list.clear:not(.alert) summary .val::after { content: '✓ All clear'; f
 .find .stripe-link { flex: none; color: var(--electric); font: 600 13px/1 var(--f-body); text-decoration: none; padding: 8px 12px;
   border: 1px solid var(--line-2); border-radius: 10px; white-space: nowrap; }
 .find .stripe-link:hover { border-color: var(--electric); }
+/* Phones: search gets its own full-width row under the logo and buttons. */
+@media (max-width: 640px) {
+  .top { flex-wrap: wrap; row-gap: 10px; }
+  .find { order: 3; flex-basis: 100%; max-width: none; }
+  .find ul { width: 100%; }
+  .find input { font-size: 16px; } /* under 16px makes iPhones zoom in on focus */
+  .find-key { display: none; }
+}
 .tag.paying { color: var(--up); background: rgba(33, 229, 138, .1); }
 .tag.gone { color: var(--muted); background: rgba(124, 140, 166, .12); }
 

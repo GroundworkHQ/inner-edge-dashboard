@@ -9,13 +9,18 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&family=Saira+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=68">
+  <link rel="stylesheet" href="css/app.css?v=69">
 </head>
 <body>
   <header class="top">
     <div class="brand">
       <img src="assets/logo-mark.png" alt="" width="42" height="26">
       <span>Inner Edge <b>Dashboard</b></span>
+    </div>
+    <div class="find" id="find-wrap" role="search" hidden>
+      <input id="find" type="search" placeholder="Find a member by name or email" aria-label="Find a Member" autocomplete="off" spellcheck="false">
+      <kbd class="find-key" aria-hidden="true">/</kbd>
+      <ul id="find-results" hidden></ul>
     </div>
     <div class="top-right">
       <span id="demo-flag" class="pill warn" hidden>Demo Data</span>
@@ -69,12 +74,6 @@
 
   <!-- Dashboard -->
   <main id="dash" class="wrap" hidden>
-    <section class="card find">
-      <label for="find" class="label">Find a Member</label>
-      <input id="find" type="search" placeholder="Search by name or email" autocomplete="off" spellcheck="false">
-      <ul id="find-results" hidden></ul>
-    </section>
-
     <section class="hero card">
       <div class="mrr-block">
         <div class="label">Monthly Recurring Revenue <button type="button" class="tip" aria-label="What is Monthly Recurring Revenue?" data-tip="What all active memberships bring in each month right now. Members whose payment failed still count until Stripe cancels them. Use 30D, 90D and All to change the chart and the green number, and $ or £ to switch currency (pounds use today&#x27;s exchange rate).">i</button></div>
@@ -171,9 +170,9 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/config.js?v=68"></script>
-  <script src="js/demo.js?v=68"></script>
-  <script src="js/render.js?v=68"></script>
-  <script src="js/app.js?v=68"></script>
+  <script src="js/config.js?v=69"></script>
+  <script src="js/demo.js?v=69"></script>
+  <script src="js/render.js?v=69"></script>
+  <script src="js/app.js?v=69"></script>
 </body>
 </html>
