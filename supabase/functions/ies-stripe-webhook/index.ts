@@ -3,7 +3,9 @@
 // seen, and never writes anything back to Stripe.
 import Stripe from "npm:stripe@17";
 import { admin, env, json, logRun, PROJECT_ID } from "../_shared/ies.ts";
-import { customerRow, subRow, type StripeCustomer, type StripeSub } from "../_shared/stripe_map.ts";
+import {
+  customerRow, refundedFirstPaymentSubs, subRow, type StripeCharge, type StripeCustomer, type StripeSub,
+} from "../_shared/stripe_map.ts";
 import { accountArgs, stripe } from "../_shared/stripe_client.ts";
 
 const HANDLED = new Set([
@@ -14,6 +16,7 @@ const HANDLED = new Set([
   "customer.subscription.deleted",
   "customer.subscription.paused",
   "customer.subscription.resumed",
+  "charge.refunded",
 ]);
 
 Deno.serve(async (req) => {
@@ -47,7 +50,23 @@ Deno.serve(async (req) => {
   }
 
   try {
-    if (event.type.startsWith("customer.subscription.")) {
+    if (event.type === "charge.refunded") {
+      // The event carries the charge, so no Stripe call is needed. Only a full
+      // refund of a signup's first payment takes it out of "New This Month".
+      const ch = event.data.object as unknown as StripeCharge;
+      const cus = !ch.customer ? null : typeof ch.customer === "string" ? ch.customer : ch.customer.id;
+      if (ch.refunded && cus) {
+        const { data: subs, error: readErr } = await db.from("ies_stripe_subscriptions")
+          .select("subscription_id, customer_id, started_at").eq("customer_id", cus);
+        if (readErr) throw new Error(readErr.message);
+        const ids = refundedFirstPaymentSubs([ch], subs ?? []);
+        if (ids.length) {
+          const { error } = await db.from("ies_stripe_subscriptions")
+            .update({ first_payment_refunded: true }).in("subscription_id", ids);
+          if (error) throw new Error(error.message);
+        }
+      }
+    } else if (event.type.startsWith("customer.subscription.")) {
       // Stripe does not guarantee event order, so an older event could land
       // after a newer one. Re-read the subscription's CURRENT state instead of
       // trusting the event body; the order then stops mattering.

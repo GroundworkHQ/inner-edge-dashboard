@@ -1,6 +1,6 @@
 // Unit tests for the pure mapping code. Run: deno test supabase/functions/tests
 import { assertEquals } from "jsr:@std/assert@1";
-import { customerRow, monthlyCents, subRow } from "../_shared/stripe_map.ts";
+import { customerRow, monthlyCents, refundedFirstPaymentSubs, subRow } from "../_shared/stripe_map.ts";
 import { contactRow } from "../_shared/ghl_map.ts";
 import { memberRow } from "../_shared/discord_map.ts";
 
@@ -78,4 +78,33 @@ Deno.test("Discord member: nickname wins, username lowercased, bots flagged", ()
   const names = new Map([["10", "Member"], ["11", "Team"]]);
   assertEquals(memberRow({ user: { id: "3", username: "x" }, roles: ["10", "99"] }, "x", names).roles, ["Member"]);
   assertEquals(memberRow({ user: { id: "4", username: "y" } }, "x", names).roles, []);
+});
+
+Deno.test("refunded first payment matches the subscription that started with it", () => {
+  const subs = [
+    { subscription_id: "sub_old", customer_id: "cus_1", started_at: "2026-05-21T12:17:23Z" },
+    { subscription_id: "sub_new", customer_id: "cus_1", started_at: "2026-10-21T14:24:08Z" },
+    { subscription_id: "sub_other", customer_id: "cus_2", started_at: "2026-10-21T14:24:08Z" },
+  ];
+  const t = (iso: string) => Date.parse(iso) / 1000;
+  const ids = refundedFirstPaymentSubs([
+    { id: "ch_1", customer: "cus_1", created: t("2026-10-21T14:24:11Z"), refunded: true },
+    // a renewal refund months later is not a first payment
+    { id: "ch_2", customer: "cus_1", created: t("2026-08-21T12:17:30Z"), refunded: true },
+    // partial or no refund never counts
+    { id: "ch_3", customer: "cus_2", created: t("2026-10-21T14:24:10Z"), refunded: false },
+  ], subs);
+  assertEquals(ids, ["sub_new"]);
+});
+
+Deno.test("refund matches only the closest start when two signups are minutes apart", () => {
+  const t = (iso: string) => Date.parse(iso) / 1000;
+  const ids = refundedFirstPaymentSubs(
+    [{ id: "ch_1", customer: "cus_1", created: t("2026-09-02T20:24:17Z"), refunded: true }],
+    [
+      { subscription_id: "sub_refunded", customer_id: "cus_1", started_at: "2026-09-02T20:24:15Z" },
+      { subscription_id: "sub_real", customer_id: "cus_1", started_at: "2026-09-02T20:29:01Z" },
+    ],
+  );
+  assertEquals(ids, ["sub_refunded"]);
 });

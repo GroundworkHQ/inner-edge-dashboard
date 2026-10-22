@@ -51,6 +51,33 @@ export function subRow(s: StripeSub) {
   };
 }
 
+// A refunded signup is not a real join. The first payment is charged within
+// seconds of the subscription starting, so match a fully refunded charge to
+// the same customer's subscription that started closest to it, within this
+// window. Closest, not every match: someone who re-signs up a few minutes
+// later (e.g. to use a coupon) must not have their real membership flagged.
+// Matching on time avoids needing invoice access on the restricted key.
+export type StripeCharge = { id: string; customer: string | { id: string } | null; created: number; refunded: boolean };
+export type SubStart = { subscription_id: string; customer_id: string; started_at: string | null };
+const FIRST_PAYMENT_WINDOW_S = 600;
+
+export function refundedFirstPaymentSubs(charges: StripeCharge[], subs: SubStart[]): string[] {
+  const ids = new Set<string>();
+  for (const ch of charges) {
+    if (!ch.refunded || !ch.customer) continue;
+    const cus = typeof ch.customer === "string" ? ch.customer : ch.customer.id;
+    let best: string | null = null;
+    let bestGap = FIRST_PAYMENT_WINDOW_S;
+    for (const s of subs) {
+      if (s.customer_id !== cus || !s.started_at) continue;
+      const gap = Math.abs(Date.parse(s.started_at) / 1000 - ch.created);
+      if (gap <= bestGap) { best = s.subscription_id; bestGap = gap; }
+    }
+    if (best) ids.add(best);
+  }
+  return [...ids];
+}
+
 export function customerRow(c: StripeCustomer) {
   return {
     project_id: PROJECT_ID,

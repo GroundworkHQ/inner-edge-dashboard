@@ -72,7 +72,7 @@ export async function runPastDueAlerts(db: SupabaseClient): Promise<string> {
     const name = await customerName(db, alert.customer_id);
     await post(hook, paid
       ? `✅ **${name}** paid. {ping} Their membership is back to normal, no need to reach out.`
-      : `❌ **${name}**'s subscription was cancelled after the failed payment (Stripe status: ${sub.status}). {ping} Check their course access and Discord role are removed.`,
+      : `❌ **${name}**'s subscription was cancelled after the failed payment (Stripe status: ${sub.status}). {ping} Check their course access and Discord role are removed. The payment link from the earlier alert no longer works (the unpaid bill is voided automatically), so if they want back in they need to re-join through checkout.`,
       pingIds(paid ? "IES_DISCORD_ALERT_PING" : "IES_DISCORD_ACCESS_PING"));
     await db.from("ies_member_alerts").update({ resolved_at: new Date().toISOString(), resolution: paid ? "paid" : "cancelled" }).eq("id", alert.id);
     settled++;
