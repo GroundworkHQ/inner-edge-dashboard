@@ -77,12 +77,13 @@
     const btn = $('refresh');
     btn.disabled = true; btn.textContent = 'Syncing...';
     try {
-      const { error } = await sb.functions.invoke('ies-sync-now');
+      const { data, error } = await sb.functions.invoke('ies-sync-now');
       if (error) console.error(error);
       btn.textContent = 'Refreshing...';
       const { data: { session } } = await sb.auth.getSession();
       await load(session);
-      if (error) $('sync').prepend('Could not sync just now, showing the last hourly sync. ');
+      if (error || data?.ok === false) $('sync').prepend('Could not sync just now, showing the last hourly sync. ');
+      else if (typeof data?.skipped === 'string') $('sync').prepend('Already synced under a minute ago. ');
     } catch (err) {
       console.error(err);
       $('sync').textContent = 'Could not load the data. Try Refresh again.';
