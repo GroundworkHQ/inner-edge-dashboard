@@ -376,9 +376,12 @@
     // Zap health check: see missingDiscord() in app.js.
     const warn = $('discord-warn');
     const miss = d.missingDiscord || [];
-    $('list-discord').classList.toggle('alert', miss.length > 0);
-    warn.hidden = !miss.length;
-    warn.textContent = miss.length ? `⚠ ${miss.length} missing a Discord name` : '';
+    // A missing name is a separate issue from this card's count, so with nobody
+    // to remove the card stays clear and the name only shows in the dropdown.
+    const flagOnFace = miss.length > 0 && d.discord.length > 0;
+    $('list-discord').classList.toggle('alert', flagOnFace);
+    warn.hidden = !flagOnFace;
+    warn.textContent = flagOnFace ? `⚠ ${miss.length} missing a Discord name` : '';
     $('discord-detail').hidden = !miss.length;
     $('discord-detail').textContent = miss.length
       ? `${miss.length} paying member${miss.length > 1 ? 's' : ''} from the last 2 weeks ${miss.length > 1 ? 'have' : 'has'} no Discord name yet: ${miss.map((p) => properName(p.name || p.email)).join(', ')}. Either they never gave one (still Pending in the Zapier table) or the "Add Discord Name" Zap missed them.`
